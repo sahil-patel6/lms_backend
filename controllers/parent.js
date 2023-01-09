@@ -1,5 +1,15 @@
 const Parent = require("../models/parent");
-const { handleForm } = require("../utilities/image_upload_and_form_handler");
+
+exports.setParentUploadDir = (req, res, next) => {
+  const fs = require('fs');
+  const dir = `${__dirname}/../public/uploads/parents/`;
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, {recursive: true});
+  }
+  req.uploadDir = dir;
+  next();
+}
+
 exports.getParentById = (req, res, next, id) => {
   Parent.findById(id).exec((err, parent) => {
     if (err || !parent) {
@@ -10,7 +20,6 @@ exports.getParentById = (req, res, next, id) => {
     req.parent = {
       ...parent._doc,
     };
-    console.log(parent._doc);
     next();
   });
 };
@@ -25,34 +34,13 @@ exports.getParent = (req, res) => {
 };
 
 exports.createParent = (req, res) => {
-  req.uploadDir = `${__dirname}/../public/uploads/parents/`;
-  handleForm(req, res, (fields, file) => {
-    const { name, email, phone, bio, address, students, plainPassword } =
-      fields;
-
-    if (
-      !name ||
-      !email ||
-      !phone ||
-      !bio ||
-      !address ||
-      !students ||
-      !plainPassword
-    ) {
-      return res.status(400).json({
-        error: "Please include all fields",
-      });
-    }
-
-    fields.students = JSON.parse(students);
-    if (file?.profile_pic) {
-      console.log(file?.profile_pic.filepath, file?.profile_pic.newFilename);
-      file.path_of_image = `/uploads/parents/${file.profile_pic.newFilename}`;
-      fields.profile_pic = file.path_of_image;
+    if (req?.file?.profile_pic) {
+      console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
+      req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
     } else {
-      file.path_of_image = "";
+      req.body.pic_url = "";
     }
-    const parent = new Parent(fields);
+    const parent = new Parent(req.body);
     parent.save((err, parent) => {
       if (err || !parent) {
         console.log(err);
@@ -66,23 +54,18 @@ exports.createParent = (req, res) => {
         res.json(parent);
       }
     });
-  });
 };
 
 exports.updateParent = (req, res) => {
-  req.uploadDir = `${__dirname}/../public/uploads/parents/`;
-  handleForm(req, res, (fields, file) => {
-    if (file?.profile_pic) {
-      file.path_of_image = `/uploads/subjects/${file.profile_pic.newFilename}`;
-      fields.profile_pic = file.path_of_image;
+  if (req?.file?.profile_pic) {
+      console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
+      req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
     } else {
-      file.path_of_image = "";
+      req.body.pic_url = "";
     }
-    console.log(file?.profile_pic?.filepath, file?.profile_pic?.newFilename);
-
     Parent.findByIdAndUpdate(
       { _id: req.parent._id },
-      { $set: fields },
+      { $set: req.body },
       { new: true },
       (err, parent) => {
         if (err || !parent) {
@@ -92,18 +75,18 @@ exports.updateParent = (req, res) => {
           });
         }
         if (
-          fields.newPassword &&
-          fields.newPassword.length >= 8 &&
-          fields.currentPassword
+          req.body.newPassword &&
+          req.body.newPassword.length >= 8 &&
+          req.body.currentPassword
         ) {
           // if(fields.plainPassword){
-          if (!parent.authenticate(fields.currentPassword)) {
+          if (!parent.authenticate(req.body.currentPassword)) {
             return res.status(400).json({
               error: "Current password is incorrect",
             });
           }
-          parent.updatePassword(fields.newPassword, (err, result) => {
-            if (err || result.modifiedCount == 0) {
+          parent.updatePassword(req.body.newPassword, (err, result) => {
+            if (err || result.modifiedCount === 0) {
               console.log("Failed to update parent password: ", err);
               return res.status(400).json({
                 error: "Update failed",
@@ -127,12 +110,11 @@ exports.updateParent = (req, res) => {
         }
       }
     );
-  });
 };
 
 exports.deleteParent = (req, res) => {
   Parent.deleteOne({ _id: req.parent._id }, (err, op) => {
-    if (err || op.deletedCount == 0) {
+    if (err || op.deletedCount === 0) {
       console.log(err)
       return res.status(400).json({
         error: "Failed to delete parent",

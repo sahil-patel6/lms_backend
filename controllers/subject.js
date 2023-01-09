@@ -1,6 +1,17 @@
 const Subject = require("../models/subject");
 const Semester = require("../models/semester");
-const { handleForm } = require("../utilities/image_upload_and_form_handler");
+const fs = require("fs");
+
+exports.setSubjectUploadDir = (req, res, next)=>{
+    const fs = require('fs');
+    const dir = `${__dirname}/../public/uploads/subjects/`;
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, {recursive: true});
+    }
+    req.uploadDir = dir;
+    next();
+}
 
 exports.getSubjectById = (req, res, next, id) => {
   Subject.findById(id)
@@ -53,24 +64,14 @@ exports.getAllSubjectsBySemester = (req, res) => {
     });
 };
 
-exports.createSubject = (req, res) => {
-  req.uploadDir = `${__dirname}/../public/uploads/subjects/`;
-  handleForm(req, res, (fields, file) => {
-    const { name, credits, department, semester } = fields;
-
-    if (!name || !credits || !department || !semester) {
-      return res.status(400).json({
-        error: "Please include all fields",
-      });
-    }
-    if (file?.pic_url){
-      console.log(file.pic_url.filepath, file.pic_url.newFilename);
-      file.path_of_image = `/uploads/subjects/${file.pic_url.newFilename}`;
-      fields.pic_url = file.path_of_image;
+exports.createSubject = (req, res,next) => {
+    if (req?.file?.pic_url){
+      console.log(req.file.pic_url.filepath, req.file.pic_url.newFilename);
+      req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
     }else{
-      file.path_of_image = "";
+      req.body.pic_url = "";
     }
-    const subject = new Subject(fields);
+    const subject = new Subject(req.body);
     subject.save((err, subject) => {
       if (err || !subject) {
         console.log(err);
@@ -82,7 +83,7 @@ exports.createSubject = (req, res) => {
           { _id: subject.semester },
           { $push: { subjects: subject._id } },
           (err, op) => {
-            if (err || op.modifiedCount == 0) {
+            if (err || op.modifiedCount === 0) {
               console.log(err);
               res.status(400).json({
                 error: "Not able to save subject in semester",
@@ -97,22 +98,18 @@ exports.createSubject = (req, res) => {
         );
       }
     });
-  });
-};
+}
 
 exports.updateSubject = (req, res) => {
-  req.uploadDir = `${__dirname}/../public/uploads/subjects/`;
-  handleForm(req, res, (fields, file) => {
-    if (file.pic_url){
-      file.path_of_image = `/uploads/subjects/${file.pic_url.newFilename}`;
-      fields.pic_url = file.path_of_image;
+    if (req?.file?.pic_url){
+      req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
     }else{
-      file.path_of_image = "";
+      req.body.pic_url = "";
     }
-    console.log(file?.pic_url?.filepath, file?.pic_url?.newFilename);
+    console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
     Subject.findByIdAndUpdate(
       { _id: req.subject._id },
-      { $set: fields},
+      { $set: req.body},
       { new: true },
       (err, subject) => {
         if (err || !subject) {
@@ -124,12 +121,11 @@ exports.updateSubject = (req, res) => {
         return res.json(subject);
       }
     );
-  });
 };
 
 exports.deleteSubject = (req, res) => {
   Subject.deleteOne({ _id: req.subject._id }, (err, removedSubject) => {
-    if (err || removedSubject.deletedCount == 0) {
+    if (err || removedSubject.deletedCount === 0) {
       return res.status(400).json({
         error: "Failed to delete Subject",
       });
@@ -138,7 +134,7 @@ exports.deleteSubject = (req, res) => {
       { _id: req.subject.semester },
       { $pull: { subjects: req.subject._id } },
       (err, op) => {
-        if (err || op.modifiedCount == 0) {
+        if (err || op.modifiedCount === 0) {
           console.log(err);
           res.status(400).json({
             error: "Failed to delete Subject from Semester",

@@ -1,9 +1,9 @@
 const formidable = require("formidable");
 
-exports.handleForm = (req, res, cb) => {
+exports.handleForm = (req, res,next) => {
   let form = new formidable.IncomingForm({
     keepExtensions: true,
-    maxFileSize: 5 * 1024 * 1024,
+    maxFileSize: 3 * 1024 * 1024,
     uploadDir: req.uploadDir,
     filter: function ({ name, originalFilename, mimetype }) {
       // keep only images
@@ -21,6 +21,17 @@ exports.handleForm = (req, res, cb) => {
         error: "Please upload only one image file ",
       });
     }
-    cb(fields, file);
+    try{
+      if(fields?.students){
+        fields.students = JSON.parse(fields.students);
+      }
+    } catch (e){
+      return res.status(400).json({
+        error: "An error occurred: "+ e
+      })
+    }
+    req.body = fields;
+    req.file = file;
+    next();
   });
 };

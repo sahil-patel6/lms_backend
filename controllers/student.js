@@ -1,5 +1,16 @@
 const Student = require("../models/student");
-const { handleForm } = require("../utilities/image_upload_and_form_handler");
+
+exports.setStudentUploadDir = (req, res, next) => {
+  const fs = require('fs');
+  const dir = `${__dirname}/../public/uploads/students/`;
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, {recursive: true});
+  }
+  req.uploadDir = dir;
+  next();
+}
+
 exports.getStudentById = (req, res, next, id) => {
   Student.findById(id).exec((err, student) => {
     if (err || !student) {
@@ -24,34 +35,14 @@ exports.getStudent = (req, res) => {
 };
 
 exports.createStudent = (req, res) => {
-  req.uploadDir = `${__dirname}/../public/uploads/students/`;
-  handleForm(req, res, (fields, file) => {
-    const { name, email, phone, bio, address, semester,department, roll_number, plainPassword } =
-      fields;
+  if (req?.file?.profile_pic) {
+    console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
+    req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
+  } else {
+    req.body.pic_url = "";
+  }
 
-    if (
-      !name ||
-      !email ||
-      !phone ||
-      !bio ||
-      !address ||
-      !semester ||
-      !department ||
-      !roll_number ||
-      !plainPassword
-    ) {
-      return res.status(400).json({
-        error: "Please include all fields",
-      });
-    }
-    if (file?.profile_pic) {
-      console.log(file?.profile_pic.filepath, file?.profile_pic.newFilename);
-      file.path_of_image = `/uploads/students/${file.profile_pic.newFilename}`;
-      fields.profile_pic = file.path_of_image;
-    } else {
-      file.path_of_image = "";
-    }
-    const student = new Student(fields);
+  const student = new Student(req.body);
     student.save((err, student) => {
       if (err || !student) {
         console.log(err);
@@ -65,23 +56,19 @@ exports.createStudent = (req, res) => {
         res.json(student);
       }
     });
-  });
 };
 
 exports.updateStudent = (req, res) => {
-  req.uploadDir = `${__dirname}/../public/uploads/students/`;
-  handleForm(req, res, (fields, file) => {
-    if (file?.profile_pic) {
-      file.path_of_image = `/uploads/students/${file.profile_pic.newFilename}`;
-      fields.profile_pic = file.path_of_image;
-    } else {
-      file.path_of_image = "";
-    }
-    console.log(file?.profile_pic?.filepath, file?.profile_pic?.newFilename);
-    console.log(fields);
-    Student.findByIdAndUpdate(
+
+  if (req?.file?.profile_pic) {
+    console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
+    req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
+  } else {
+    req.body.pic_url = "";
+  }
+  Student.findByIdAndUpdate(
       { _id: req.student._id },
-      { $set: fields },
+      { $set: req.body },
       { new: true },
       (err, student) => {
         if (err || !student) {
@@ -91,18 +78,18 @@ exports.updateStudent = (req, res) => {
           });
         }
         if (
-          fields.newPassword &&
-          fields.newPassword.length >= 8 &&
-          fields.currentPassword
+          req.body.newPassword &&
+          req.body.newPassword.length >= 8 &&
+          req.body.currentPassword
         ) {
           // if(fields.plainPassword){
-          if (!student.authenticate(fields.currentPassword)) {
+          if (!student.authenticate(req.body.currentPassword)) {
             return res.status(400).json({
               error: "Current password is incorrect",
             });
           }
-          student.updatePassword(fields.newPassword, (err, result) => {
-            if (err || result.modifiedCount == 0) {
+          student.updatePassword(req.body.newPassword, (err, result) => {
+            if (err || result.modifiedCount === 0) {
               console.log("Failed to update student password: ", err);
               return res.status(400).json({
                 error: "Update failed",
@@ -126,12 +113,11 @@ exports.updateStudent = (req, res) => {
         }
       }
     );
-  });
 };
 
 exports.deleteStudent = (req, res) => {
   Student.deleteOne({ _id: req.student._id }, (err, op) => {
-    if (err || op.deletedCount == 0) {
+    if (err || op.deletedCount === 0) {
       console.log(err)
       return res.status(400).json({
         error: "Failed to delete student",
