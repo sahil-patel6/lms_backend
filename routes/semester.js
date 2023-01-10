@@ -10,16 +10,22 @@ const {
   deleteSemester,
 } = require("../controllers/semester");
 
-const { isSignedIn, isAuthenticated, isAdmin } = require("../controllers/auth");
+const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const { getAdminById } = require("../controllers/admin");
 
 const { validateAllErrors } = require("../utilities/error");
 const { check } = require("express-validator");
+const {getTeacherById} = require("../controllers/teacher");
+const {getStudentById} = require("../controllers/student");
+const {getParentById} = require("../controllers/parent");
 
 router.param("adminId", getAdminById);
 router.param("semesterId", getSemesterById);
+router.param("teacherId",getTeacherById);
+router.param("studentId",getStudentById);
+router.param("parentId",getParentById);
 
-// routes for creating
+/// CREATE SEMESTER ROUTE
 router.post(
   "/semester/:adminId",
   [
@@ -37,10 +43,19 @@ router.post(
   createSemester
 );
 
-router.get("/semester/:semesterId", getSemester);
+/// GET SEMESTER ROUTES FOR ALL USERS
+router.get("/semester/:semesterId/:adminId",isSignedIn,isAuthenticated,isAdmin, getSemester);
+router.get("/semester/:semesterId/:teacherId",isSignedIn,isAuthenticated,isTeacher, getSemester);
+router.get("/semester/:semesterId/:studentId",isSignedIn,isAuthenticated,isStudent, getSemester);
+router.get("/semester/:semesterId/:parentId",isSignedIn,isAuthenticated,isParent, getSemester);
 
-router.get("/semesters/:departmentId", getAllSemestersByDepartment);
+/// GET SEMESTER BY DEPARTMENT ID ROUTES FOR ALL USERS
+router.get("/semesters/:departmentId/:adminId",isSignedIn,isAuthenticated,isAdmin, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/:teacherId",isSignedIn,isAuthenticated,isTeacher, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/:studentId",isSignedIn,isAuthenticated,isStudent, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/:parentId",isSignedIn,isAuthenticated,isParent, getAllSemestersByDepartment);
 
+/// UPDATE SEMESTER ROUTE
 router.put(
   "/semester/:semesterId/:adminId",
   isSignedIn,
@@ -49,6 +64,7 @@ router.put(
   updateSemester
 );
 
+/// DELETE SEMESTER ROUTE
 router.delete(
   "/semester/:semesterId/:adminId",
   isSignedIn,

@@ -11,16 +11,22 @@ const {
     setTeacherUploadDir
 } = require("../controllers/teacher");
 
-const {isSignedIn, isAuthenticated, isAdmin, isTeacher, isAdminOrTeacher} = require("../controllers/auth");
+const {isSignedIn, isAuthenticated, isAdmin, isTeacher, isParent, isStudent} = require("../controllers/auth");
 const {getAdminById} = require("../controllers/admin");
+const {getStudentById} = require("../controllers/student");
+const {getParentById} = require("../controllers/parent");
+
 const {handleForm} = require("../utilities/form_handler");
+
 const {validateAllErrors} = require("../utilities/error");
 const {check} = require("express-validator");
 
 router.param("teacherId", getTeacherById);
-
 router.param("adminId", getAdminById);
+router.param("studentId",getStudentById);
+router.param("parentId",getParentById);
 
+/// CREATE TEACHER ROUTE
 router.post("/teacher/create/:adminId", isSignedIn, isAuthenticated, isAdmin, setTeacherUploadDir,
     handleForm,
     check("name")
@@ -46,10 +52,17 @@ router.post("/teacher/create/:adminId", isSignedIn, isAuthenticated, isAdmin, se
         .withMessage("password should be minimum 8 characters long"),
     validateAllErrors, createTeacher);
 
-router.get("/teacher/:teacherId", getTeacher);
+/// GET ROUTES FOR ALL USERS
+router.get("/teacher/:teacherId",isSignedIn,isAuthenticated,isTeacher, getTeacher);
+router.get("/teacher/:teacherId/admin/:adminId", isSignedIn,isAuthenticated,isAdmin,getTeacher);
+router.get("/teacher/:teacherId/student/:studentId", isSignedIn,isAuthenticated,isStudent,getTeacher);
+router.get("/teacher/:teacherId/parent/:parentId",isSignedIn,isAuthenticated,isParent, getTeacher);
 
-router.put("/teacher/:teacherId/:adminId", isSignedIn, isAuthenticated, isAdminOrTeacher, setTeacherUploadDir, handleForm, updateTeacher);
+/// UPDATE TEACHER CAN ONLY BE DONE EITHER BY ADMIN OR TEACHER HIMSELF
+router.put("/teacher/:teacherId/:adminId", isSignedIn, isAuthenticated, isAdmin, setTeacherUploadDir, handleForm, updateTeacher);
+router.put("/teacher/:teacherId/", isSignedIn, isAuthenticated, isTeacher, setTeacherUploadDir, handleForm, updateTeacher);
 
+/// DELETE TEACHER CAN  ONLY BE DONE BY ADMIN
 router.delete("/teacher/:teacherId/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteTeacher)
 
 module.exports = router;

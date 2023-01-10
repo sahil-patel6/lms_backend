@@ -2,15 +2,16 @@ const Department = require("../models/department")
 
 exports.getDepartmentById = (req, res, next, id) => {
     Department.findById(id)
-            .populate({path:'semesters',populate:{path:"subjects",select:"-__v -createdAt -updatedAt"},select:'-__v -createdAt -updatedAt'})
-            .exec((err, department) => {
+            .populate({
+                path:'semesters',
+                populate:{path:"subjects",select:"-__v -createdAt -updatedAt"},
+                select:'-__v -createdAt -updatedAt'
+            }).exec((err, department) => {
         if (err || !department) {
             return res.status(400).json({
                 error: "No department Found",
             });
         }
-        department._doc.createdAt = undefined;
-        department._doc.updatedAt = undefined;
         req.department = department._doc;
         next();
     });
@@ -18,26 +19,27 @@ exports.getDepartmentById = (req, res, next, id) => {
 
 
 exports.getDepartment = (req, res) => {
+    req.department.createdAt = undefined;
+    req.department.updatedAt = undefined;
     req.department.__v = undefined;
     return res.json(req.department);
 };
 
 exports.getAllDepartments = (req,res) => {
     Department.find()
-    .populate({path:'semesters',populate:{path:"subjects",select:"-__v -createdAt -updatedAt"},select:'-__v -createdAt -updatedAt'})
-    .exec((err,departments)=>{
+    .populate({
+        path:'semesters',
+        populate:{path:"subjects",select:"-__v -createdAt -updatedAt -department -semester"},
+        select:'-__v -createdAt -updatedAt -department'
+    }).select("-createdAt -updatedAt -__v")
+        .exec((err,departments)=>{
         if (err || !departments) {
             console.log(err);
             res.status(400).json({
                 error: "An error occurred while trying to find all department from db " + err,
             });
         }else{
-            return res.json(departments.map(department=>{
-                department.createdAt = undefined;
-                department.updatedAt = undefined;
-                department.__v = undefined
-                return department
-            }));
+            return res.json({departments});
         }
     })
 }
@@ -52,6 +54,8 @@ exports.createDepartment = (req,res) => {
             });
         } else {            
             department.__v = undefined;
+            department.createdAt = undefined;
+            department.updatedAt = undefined;
             res.json(department);
         }
     });
@@ -62,13 +66,13 @@ exports.updateDepartment = (req, res) => {
         { _id: req.department._id },
         { $set: req.body },
         {new:true},
+    ).select("-createdAt -updatedAt -__v").exec(
         (err, department) => {
             if (err || !department) {
                 return res.status(400).json({
                     error: "Update failed",
                 });
             }
-            department.__v = undefined;
             return res.json(department);
         }
     );
@@ -77,7 +81,7 @@ exports.updateDepartment = (req, res) => {
 exports.deleteDepartment = (req, res) => {
     Department.deleteOne({_id: req.department._id},(err, removedDepartment) => {
         console.log(removedDepartment);
-        if (err || removedDepartment.deletedCount == 0) {
+        if (err || removedDepartment.deletedCount === 0) {
             return res.status(400).json({
                 error: "Failed to delete Department",
             });

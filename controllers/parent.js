@@ -51,6 +51,8 @@ exports.createParent = (req, res) => {
         parent.__v = undefined;
         parent.createdAt = undefined;
         parent.updatedAt = undefined;
+        parent.password = undefined;
+        parent.salt = undefined;
         res.json(parent);
       }
     });
@@ -66,50 +68,41 @@ exports.updateParent = (req, res) => {
     Parent.findByIdAndUpdate(
       { _id: req.parent._id },
       { $set: req.body },
-      { new: true },
-      (err, parent) => {
-        if (err || !parent) {
-          console.log(err);
-          return res.status(400).json({
-            error: "Update failed",
-          });
-        }
-        if (
-          req.body.newPassword &&
-          req.body.newPassword.length >= 8 &&
-          req.body.currentPassword
-        ) {
-          // if(fields.plainPassword){
-          if (!parent.authenticate(req.body.currentPassword)) {
+      { new: true })
+        .select("-createdAt -updatedAt -salt -password -__v")
+        .exec((err, parent) => {
+          if (err || !parent) {
+            console.log(err);
             return res.status(400).json({
-              error: "Current password is incorrect",
+              error: "Update failed",
             });
           }
-          parent.updatePassword(req.body.newPassword, (err, result) => {
-            if (err || result.modifiedCount === 0) {
-              console.log("Failed to update parent password: ", err);
+          if (
+            req.body.newPassword &&
+            req.body.newPassword.length >= 8 &&
+            req.body.currentPassword
+          ) {
+            // if(fields.plainPassword){
+            if (!parent.authenticate(req.body.currentPassword)) {
               return res.status(400).json({
-                error: "Update failed",
+                error: "Current password is incorrect",
               });
-            } else {
-              parent.salt = undefined;
-              parent.password = undefined;
-              parent.createdAt = undefined;
-              parent.updatedAt = undefined;
-              parent.__v = undefined;
-              return res.json(parent);
             }
-          });
-        } else {
-          parent.salt = undefined;
-          parent.password = undefined;
-          parent.createdAt = undefined;
-          parent.updatedAt = undefined;
-          parent.__v = undefined;
-          return res.json(parent);
+            parent.updatePassword(req.body.newPassword, (err, result) => {
+              if (err || result.modifiedCount === 0) {
+                console.log("Failed to update parent password: ", err);
+                return res.status(400).json({
+                  error: "Update failed",
+                });
+              } else {
+                return res.json(parent);
+              }
+            });
+          } else {
+            return res.json(parent);
+          }
         }
-      }
-    );
+      );
 };
 
 exports.deleteParent = (req, res) => {

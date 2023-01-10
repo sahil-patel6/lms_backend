@@ -11,15 +11,21 @@ const {
   deleteDepartment,
 } = require("../controllers/department");
 
-const { isSignedIn, isAuthenticated, isAdmin } = require("../controllers/auth");
+const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const { getAdminById } = require("../controllers/admin");
 const { validateAllErrors } = require("../utilities/error");
 const { check } = require("express-validator");
+const {getTeacherById} = require("../controllers/teacher");
+const {getStudentById} = require("../controllers/student");
+const {getParentById} = require("../controllers/parent");
 
 router.param("adminId", getAdminById);
 router.param("departmentId", getDepartmentById);
+router.param("teacherId", getTeacherById);
+router.param("studentId", getStudentById);
+router.param("parentId", getParentById);
 
-// routes for creating
+/// CREATE DEPARTMENT ROUTE
 router.post(
   "/department/:adminId",
   [
@@ -40,24 +46,22 @@ router.post(
   createDepartment
 );
 
-router.get("/department/:departmentId", getDepartment);
+/// GET DEPARTMENT ROUTE FOR ALL USERS
+router.get("/department/:departmentId/admin/:adminId", isSignedIn,isAuthenticated,isAdmin, getDepartment);
+router.get("/department/:departmentId/teacher/:teacherId", isSignedIn,isAuthenticated,isTeacher, getDepartment);
+router.get("/department/:departmentId/student/:studentId", isSignedIn,isAuthenticated,isStudent, getDepartment);
+router.get("/department/:departmentId/parent/:parentId", isSignedIn,isAuthenticated,isParent, getDepartment);
 
-router.get("/departments/", getAllDepartments);
+/// GET ALL DEPARTMENTS ROUTE FOR ALL USERS
+router.get("/departments/admin/:adminId", isSignedIn,isAuthenticated,isAdmin, getAllDepartments);
+router.get("/departments/teacher/:teacherId", isSignedIn,isAuthenticated,isTeacher, getAllDepartments);
+router.get("/departments/student/:studentId", isSignedIn,isAuthenticated,isStudent, getAllDepartments);
+router.get("/departments/parent/:parentId", isSignedIn,isAuthenticated,isParent, getAllDepartments);
 
-router.put(
-  "/department/:departmentId/:adminId",
-  isSignedIn,
-  isAuthenticated,
-  isAdmin,
-  updateDepartment
-);
+/// UPDATE DEPARTMENT ROUTE
+router.put("/department/:departmentId/:adminId", isSignedIn, isAuthenticated, isAdmin, updateDepartment);
 
-router.delete(
-  "/department/:departmentId/:adminId",
-  isSignedIn,
-  isAuthenticated,
-  isAdmin,
-  deleteDepartment
-);
+/// DELETE DEPARTMENT ROUTE
+router.delete("/department/:departmentId/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteDepartment);
 
 module.exports = router;

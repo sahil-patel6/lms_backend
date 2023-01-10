@@ -15,10 +15,12 @@ exports.signout = (req, res) => {
   });
 };
 
-exports.admin_signin = (req, res) => {
-  const { email, plainPassword } = req.body;
+exports.admin_signin = (admin, res) => {
+  const { email, plainPassword } = admin.body;
 
-  Admin.findOne({ email }, (err, admin) => {
+  Admin.findOne({ email })
+      .select("-createdAt")
+      .exec( (err, admin) => {
     if (err || !admin) {
       return res.status(400).json({
         error: "admin Email Doesn't exist",
@@ -34,13 +36,14 @@ exports.admin_signin = (req, res) => {
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });
-    const { _id, email } = admin;
+    admin.salt = undefined;
+    admin.password = undefined;
+    admin.createdAt = undefined;
+    admin.updatedAt = undefined;
+    admin.__v = undefined;
     return res.status(200).json({
       token,
-      admin: {
-        _id,
-        email,
-      },
+      admin
     });
   });
 };
@@ -48,7 +51,11 @@ exports.admin_signin = (req, res) => {
 exports.student_signin = (req, res) => {
   const { email, plainPassword } = req.body;
 
-  Student.findOne({ email }, (err, student) => {
+  Student.findOne({ email })
+      .populate("semester","_id name")
+      .populate("department","_id name")
+      .select("-createdAt")
+      .exec( (err, student) => {
     if (err || !student) {
       return res.status(400).json({
         error: "student Email Doesn't exist",
@@ -65,6 +72,11 @@ exports.student_signin = (req, res) => {
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });
+    student.salt = undefined;
+    student.password = undefined;
+    student.createdAt = undefined;
+    student.updatedAt = undefined;
+    student.__v = undefined;
     return res.status(200).json({
       token,
       student,
@@ -75,7 +87,14 @@ exports.student_signin = (req, res) => {
 exports.teacher_signin = (req, res) => {
   const { email, plainPassword } = req.body;
 
-  Teacher.findOne({ email }, (err, teacher) => {
+  Teacher.findOne({ email })
+      .populate({
+        path: "subjects",
+        select: "_id name semester department",
+        populate: { path: "semester department", select: "_id name" },
+      })
+      .select("-createdAt")
+      .exec( (err, teacher) => {
     if (err || !teacher) {
       return res.status(400).json({
         error: "teacher Email Doesn't exist",
@@ -92,6 +111,11 @@ exports.teacher_signin = (req, res) => {
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });
+    teacher.salt = undefined;
+    teacher.password = undefined;
+    teacher.createdAt = undefined;
+    teacher.updatedAt = undefined;
+    teacher.__v = undefined;
     return res.status(200).json({
       token,
       teacher,
@@ -102,7 +126,14 @@ exports.teacher_signin = (req, res) => {
 exports.parent_signin = (req, res) => {
   const { email, plainPassword } = req.body;
 
-  Parent.findOne({ email }, (err, parent) => {
+  Parent.findOne({ email })
+      .populate({
+        path:"students",
+        select:"-salt -password -createdAt -updatedAt -__v",
+        populate: { path: "department semester", select: "_id name"}
+      })
+      .select("-createdAt")
+      .exec( (err, parent) => {
     if (err || !parent) {
       return res.status(400).json({
         error: "Parent Email Doesn't exist",
@@ -119,6 +150,11 @@ exports.parent_signin = (req, res) => {
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });
+    parent.salt = undefined;
+    parent.password = undefined;
+    parent.createdAt = undefined;
+    parent.updatedAt = undefined;
+    parent.__v = undefined;
     return res.status(200).json({
       token,
       parent,
@@ -189,29 +225,3 @@ exports.isStudent = (req, res, next) => {
   }
   next();
 };
-
-exports.isAdminOrTeacher = (req,res,next) => {
-    if (!(req.isTeacher || req.isAdmin)){
-        return res.status(403).json({
-            error: "You are not Teacher or Admin, ACCESS DENIED",
-          }); 
-    }
-    next();
-}
-
-exports.isAdminOrStudent = (req,res,next) => {
-  if (!(req.isStudent || req.isAdmin)){
-      return res.status(403).json({
-          error: "You are not Student or Admin, ACCESS DENIED",
-        }); 
-  }
-  next();
-}
-exports.isAdminOrParent = (req,res,next) => {
-  if (!(req.isParent || req.isAdmin)){
-      return res.status(403).json({
-          error: "You are not Parent or Admin, ACCESS DENIED",
-        }); 
-  }
-  next();
-}

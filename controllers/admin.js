@@ -18,26 +18,20 @@ exports.getAdmin = (req, res) => {
     req.admin.salt = undefined;
     req.admin.password = undefined;
     req.admin.__v = undefined;
-    req.admin.isAdmin = undefined;
+    req.admin.createdAt = undefined;
+    req.admin.updatedAt = undefined;
     return res.json(req.admin);
 };
 
 exports.getAllAdmins = (req,res) => {
-    Admin.find((err,admins)=>{
+    Admin.find().select("-createdAt -updatedAt -salt -password -__v").exec((err,admins)=>{
         if (err || !admins) {
             console.log(err);
             res.status(400).json({
                 error: "An error occurred while trying to find all admin from db " + err,
             });
         }else{
-            return res.json(admins.map(admin=>{
-                admin.createdAt = undefined
-                admin.updatedAt = undefined
-                admin.salt = undefined
-                admin.password = undefined
-                admin.__v = undefined
-                return admin
-            }));
+            return res.json({admins});
         }
     })
 }
@@ -51,8 +45,12 @@ exports.createAdmin = (req,res) =>{
                 error: "Not able to save admin in DB",
             });
         } else {
-            const {_id,email} = admin;
-            res.json({_id, email});
+            admin.password = undefined;
+            admin.createdAt = undefined;
+            admin.updatedAt = undefined;
+            admin.salt = undefined;
+            admin.__v = undefined;
+            res.json({admin});
         }
     });
 }
@@ -61,8 +59,9 @@ exports.updateAdmin = (req, res) => {
     Admin.findByIdAndUpdate(
         { _id: req.admin._id },
         { $set: req.body },
-        {new: true},
-        (err, admin) => {
+        {new: true})
+        .select("-__v -salt -password -createdAt -updatedAt")
+        .exec((err, admin) => {
             if (err || !admin) {
                 return res.status(400).json({
                     error: "Update failed",
@@ -76,26 +75,16 @@ exports.updateAdmin = (req, res) => {
                     })
                 }
                 admin.updatePassword(req.body.newPassword, (err,result)=>{
-                    if (err || result.modifiedCount == 0){
+                    if (err || result.modifiedCount === 0){
                         console.log("Failed to update admin password: ",err);
                         return res.status(400).json({
                             error: "Update failed",
                         });
                     }else{
-                        admin.salt = undefined;
-                        admin.password = undefined;
-                        admin.createdAt = undefined;
-                        admin.updatedAt = undefined;
-                        admin.__v = undefined;
                         return res.json(admin);
                     }
                 }); 
             }else{
-                admin.salt = undefined;
-                admin.password = undefined;
-                admin.createdAt = undefined;
-                admin.updatedAt = undefined;
-                admin.__v = undefined;
                 return res.json(admin);
             }
         }
@@ -105,7 +94,7 @@ exports.updateAdmin = (req, res) => {
 
 exports.deleteAdmin = (req, res) => {
     Admin.deleteOne({_id: req.admin._id},(err, removedAdmin) => {
-        if (err || removedAdmin.deletedCount == 0) {
+        if (err || removedAdmin.deletedCount === 0) {
             return res.status(400).json({
                 error: "Failed to delete admin",
             });

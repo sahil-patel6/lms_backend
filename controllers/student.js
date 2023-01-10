@@ -1,4 +1,5 @@
 const Student = require("../models/student");
+const Subject = require("../models/subject");
 
 exports.setStudentUploadDir = (req, res, next) => {
   const fs = require('fs');
@@ -34,6 +35,27 @@ exports.getStudent = (req, res) => {
   return res.json(req.student);
 };
 
+exports.getAllStudentsBySemester = (req, res) => {
+  Student.find({ semester: req.params.semesterId })
+      // .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })
+      .populate('semester', "_id name")
+      // .populate({ path: "department", select: "-__v -createdAt -updatedAt" })
+      .populate('department',"_id name")
+      .select("-createdAt -updatedAt -salt -password -__v")
+      .exec((err, students) => {
+        if (err || !students) {
+          console.log(err);
+          res.status(400).json({
+            error:
+                "An error occurred while trying to find all subjects from db " +
+                err,
+          });
+        } else {
+          return res.json({students});
+        }
+      });
+};
+
 exports.createStudent = (req, res) => {
   if (req?.file?.profile_pic) {
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
@@ -53,13 +75,14 @@ exports.createStudent = (req, res) => {
         student.__v = undefined;
         student.createdAt = undefined;
         student.updatedAt = undefined;
+        student.password = undefined;
+        student.salt = undefined;
         res.json(student);
       }
     });
 };
 
 exports.updateStudent = (req, res) => {
-
   if (req?.file?.profile_pic) {
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
     req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
@@ -69,8 +92,9 @@ exports.updateStudent = (req, res) => {
   Student.findByIdAndUpdate(
       { _id: req.student._id },
       { $set: req.body },
-      { new: true },
-      (err, student) => {
+      { new: true })
+      .select("-createdAt -updatedAt -salt -password -__v")
+      .exec((err, student) => {
         if (err || !student) {
           console.log(err);
           return res.status(400).json({
@@ -95,20 +119,10 @@ exports.updateStudent = (req, res) => {
                 error: "Update failed",
               });
             } else {
-              student.salt = undefined;
-              student.password = undefined;
-              student.createdAt = undefined;
-              student.updatedAt = undefined;
-              student.__v = undefined;
               return res.json(student);
             }
           });
         } else {
-          student.salt = undefined;
-          student.password = undefined;
-          student.createdAt = undefined;
-          student.updatedAt = undefined;
-          student.__v = undefined;
           return res.json(student);
         }
       }

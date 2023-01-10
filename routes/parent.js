@@ -15,13 +15,16 @@ const {
     setParentUploadDir
 } = require("../controllers/parent");
 
-const { isSignedIn, isAuthenticated, isAdmin, isParent, isAdminOrParent} = require("../controllers/auth");
+const { isSignedIn, isAuthenticated, isAdmin, isParent, isTeacher} = require("../controllers/auth");
 const {handleForm} = require("../utilities/form_handler");
 const {check} = require("express-validator");
+const {getTeacherById} = require("../controllers/teacher");
 
 router.param("parentId", getParentById);
 router.param("adminId", getAdminById);
+router.param("teacherId", getTeacherById);
 
+/// CREATE PARENT ROUTE
 router.post("/parent/create/:adminId",isSignedIn,isAuthenticated,isAdmin,setParentUploadDir,
     handleForm,
     check("name")
@@ -47,10 +50,16 @@ router.post("/parent/create/:adminId",isSignedIn,isAuthenticated,isAdmin,setPare
         .withMessage("password should be minimum 8 characters long"),
     createParent)
 
-router.get("/parent/:parentId", getParent);
+/// GET PARENT ROUTES
+router.get("/parent/:parentId/",isSignedIn,isAuthenticated,isParent, getParent);
+router.get("/parent/:parentId/admin/:adminId",isSignedIn,isAuthenticated,isAdmin, getParent);
+router.get("/parent/:parentId/teacher/:teacherId",isSignedIn,isAuthenticated,isTeacher, getParent);
 
-router.put("/parent/:parentId/:adminId", isSignedIn, isAuthenticated, isAdminOrParent,setParentUploadDir,handleForm, updateParent);
+/// UPDATE PARENT ROUTES CAN ONLY BE USED BY EITHER ADMIN OR PARENT HIMSELF
+router.put("/parent/:parentId/:adminId", isSignedIn, isAuthenticated, isAdmin,setParentUploadDir,handleForm, updateParent);
+router.put("/parent/:parentId", isSignedIn, isAuthenticated, isParent,setParentUploadDir,handleForm, updateParent);
 
+/// DELETE PARENT ROUTE
 router.delete("/parent/:parentId/:adminId",isSignedIn,isAuthenticated,isAdmin, deleteParent);
 
 module.exports = router;

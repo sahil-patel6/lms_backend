@@ -41,7 +41,7 @@ var parentSchema = new Schema(
       type: [
         {
           type: ObjectId,
-          ref: "Subject",
+          ref: "Student",
         },
       ],
       required: true,

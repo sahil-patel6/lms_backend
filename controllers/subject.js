@@ -25,8 +25,6 @@ exports.getSubjectById = (req, res, next, id) => {
           error: "No subject Found",
         });
       }
-      subject._doc.createdAt = undefined;
-      subject._doc.updatedAt = undefined;
       req.subject = subject._doc;
       next();
     });
@@ -34,16 +32,21 @@ exports.getSubjectById = (req, res, next, id) => {
 
 exports.getSubject = (req, res) => {
   req.subject.__v = undefined;
+  req.subject.createdAt = undefined;
+  req.subject.updatedAt = undefined;
   return res.json(req.subject);
 };
 
 exports.getAllSubjectsBySemester = (req, res) => {
   Subject.find({ semester: req.params.semesterId })
-    .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })
-    .populate({ path: "department", select: "-__v -createdAt -updatedAt" })
+    // .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })
+    .populate('semester', "_id name")
+    // .populate({ path: "department", select: "-__v -createdAt -updatedAt" })
+    .populate('department',"_id name")
     // .populate({ path: "lessons", select: "-__v -createdAt -updatedAt" })
     // .populate({ path: "assignments", select: "-__v -createdAt -updatedAt" })
-    .exec((err, subjects) => {
+      .select("-createdAt -updatedAt -__v")
+      .exec((err, subjects) => {
       if (err || !subjects) {
         console.log(err);
         res.status(400).json({
@@ -52,14 +55,7 @@ exports.getAllSubjectsBySemester = (req, res) => {
             err,
         });
       } else {
-        return res.json(
-          subjects.map((subject) => {
-            subject.createdAt = undefined;
-            subject.__v = undefined;
-            subject.updatedAt = undefined;
-            return subject;
-          })
-        );
+        return res.json({subjects});
       }
     });
 };
@@ -110,14 +106,14 @@ exports.updateSubject = (req, res) => {
     Subject.findByIdAndUpdate(
       { _id: req.subject._id },
       { $set: req.body},
-      { new: true },
-      (err, subject) => {
+      { new: true })
+        .select("-createdAt -updatedAt -__v")
+        .exec((err, subject) => {
         if (err || !subject) {
           return res.status(400).json({
             error: "Update failed",
           });
         }
-        subject.__v = undefined;
         return res.json(subject);
       }
     );

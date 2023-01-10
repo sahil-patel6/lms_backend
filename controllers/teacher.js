@@ -52,6 +52,8 @@ exports.createTeacher = (req, res) => {
             teacher.__v = undefined;
             teacher.createdAt = undefined;
             teacher.updatedAt = undefined;
+            teacher.password = undefined;
+            teacher.salt = undefined;
             res.json(teacher);
         }
     });
@@ -67,8 +69,9 @@ exports.updateTeacher = (req, res) => {
     Teacher.findByIdAndUpdate(
         {_id: req.teacher._id},
         {$set: req.body},
-        {new: true},
-        (err, teacher) => {
+        {new: true})
+        .select("-createdAt -updatedAt -__v -salt -password")
+        .exec((err, teacher) => {
             if (err || !teacher) {
                 console.log(err);
                 return res.status(400).json({
@@ -92,21 +95,11 @@ exports.updateTeacher = (req, res) => {
                             error: "Update failed",
                         });
                     } else {
-                        teacher.salt = undefined;
-                        teacher.password = undefined;
-                        teacher.createdAt = undefined;
-                        teacher.updatedAt = undefined;
-                        teacher.__v = undefined;
                         return res.json(teacher);
                     }
                 });
             } else {
-                console.log("NO need to update teacher password")
-                teacher.salt = undefined;
-                teacher.password = undefined;
-                teacher.createdAt = undefined;
-                teacher.updatedAt = undefined;
-                teacher.__v = undefined;
+                console.log("NO need to update teacher password");
                 return res.json(teacher);
             }
         }
@@ -115,7 +108,7 @@ exports.updateTeacher = (req, res) => {
 
 exports.deleteTeacher = (req, res) => {
     Teacher.deleteOne({_id: req.teacher._id}, (err, op) => {
-        if (err || op.deletedCount == 0) {
+        if (err || op.deletedCount === 0) {
             console.log(err)
             return res.status(400).json({
                 error: "Failed to delete Teacher",

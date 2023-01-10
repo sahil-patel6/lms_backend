@@ -12,17 +12,23 @@ const {
   setSubjectUploadDir,
 } = require("../controllers/subject");
 
-const { isSignedIn, isAuthenticated, isAdmin } = require("../controllers/auth");
+const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const {getAdminById} =  require("../controllers/admin");
 const {validateAllErrors} = require("../utilities/error")
 const { check } = require("express-validator");
 const {handleForm} = require("../utilities/form_handler");
+const {getTeacherById} = require("../controllers/teacher");
+const {getStudentById} = require("../controllers/student");
+const {getParentById} = require("../controllers/parent");
 
 
 router.param("adminId", getAdminById);
+router.param("teacherId", getTeacherById);
+router.param("studentId", getStudentById);
+router.param("parentId", getParentById);
 router.param("subjectId", getSubjectById);
 
-// routes for creating
+/// CREATE SUBJECT ROUTE
 router.post(
   "/subject/:adminId",
   isSignedIn,
@@ -46,16 +52,19 @@ router.post(
   createSubject
 );
 
-router.get(
-  "/subject/:subjectId",
-  getSubject
-);
+/// GET SUBJECT ROUTES FOR ALL USERS
+router.get( "/subject/:subjectId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getSubject);
+router.get( "/subject/:subjectId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getSubject);
+router.get( "/subject/:subjectId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getSubject);
+router.get( "/subject/:subjectId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getSubject);
 
-router.get(
-  "/subjects/:semesterId",
-  getAllSubjectsBySemester,
-);
+/// GET SUBJECT BY SEMESTER ID ROUTES FOR ALL USERS
+router.get( "/subjects/:semesterId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getAllSubjectsBySemester);
+router.get( "/subjects/:semesterId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getAllSubjectsBySemester);
+router.get( "/subjects/:semesterId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getAllSubjectsBySemester);
+router.get( "/subjects/:semesterId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getAllSubjectsBySemester);
 
+/// UPDATE ROUTE FOR SUBJECT
 router.put(
   "/subject/:subjectId/:adminId",
   isSignedIn,
@@ -66,6 +75,7 @@ router.put(
   updateSubject
 );
 
+/// DELETE ROUTE FOR SUBJECT
 router.delete(
   "/subject/:subjectId/:adminId",
   isSignedIn,

@@ -21,14 +21,14 @@ exports.getSemesterById = (req, res, next, id) => {
           error: "No semester Found",
         });
       }
-      semester._doc.createdAt = undefined;
-      semester._doc.updatedAt = undefined;
       req.semester = semester._doc;
       next();
     });
 };
 
 exports.getSemester = (req, res) => {
+  req.semester.createdAt = undefined;
+  req.semester.updatedAt = undefined;
   req.semester.__v = undefined;
   return res.json(req.semester);
 };
@@ -39,25 +39,19 @@ exports.getAllSemestersByDepartment = (req,res) => {
     select: "-__v -createdAt -updatedAt",
   //   populate: { path: "lessons", select: "-__v" },
   })
-  .populate(
-    {
+  .populate({
       path:"department",
       select: "-__v -createdAt -updatedAt -semesters ",
-    },
-  ).exec((err,semesters)=>{
+    })
+      .select("-createdAt -updatedAt -__v")
+      .exec((err,semesters)=>{
       if (err || !semesters) {
           console.log(err);
           res.status(400).json({
               error: "An error occurred while trying to find all semesters from db " + err,
           });
       }else{
-          return res.json(semesters.map(semester=>{
-              semester.__v = undefined
-              semester.createdAt = undefined
-              semester.updatedAt = undefined
-              console.log(semester)
-              return semester
-          }));
+          return res.json({semesters});
       }
   })
 }
@@ -75,12 +69,14 @@ exports.createSemester = (req, res) => {
         { _id: semester.department },
         { $push: { semesters: semester._id } },
         (err, op) => {
-          if (err || op.modifiedCount == 0) {
+          if (err || op.modifiedCount === 0) {
             console.log(err);
             res.status(400).json({
               error: "Not able to save semester in Department",
             });
           } else {
+            semester.createdAt = undefined;
+            semester.updatedAt = undefined;
             semester.__v = undefined;
             res.json(semester);
           }
@@ -94,14 +90,14 @@ exports.updateSemester = (req, res) => {
   Semester.findByIdAndUpdate(
     { _id: req.semester._id },
     { $set: req.body },
-    { new: true },
-    (err, semester) => {
+    { new: true })
+      .select("-createdAt -updatedAt -__v")
+      .exec((err, semester) => {
       if (err || !semester) {
         return res.status(400).json({
           error: "Update failed",
         });
       }
-      semester.__v = undefined;
       return res.json(semester);
     }
   );
@@ -109,7 +105,7 @@ exports.updateSemester = (req, res) => {
 
 exports.deleteSemester = (req, res) => {
   Semester.deleteOne({ _id: req.semester._id }, (err, removedSemester) => {
-    if (err || removedSemester.deletedCount == 0) {
+    if (err || removedSemester.deletedCount === 0) {
       return res.status(400).json({
         error: "Failed to delete Semester",
       });
@@ -118,7 +114,7 @@ exports.deleteSemester = (req, res) => {
       { _id: req.semester.department },
       { $pull: { semesters: req.semester._id } },
       (err, op) => {
-        if (err || op.modifiedCount == 0) {
+        if (err || op.modifiedCount === 0) {
           console.log(err);
           res.status(400).json({
             error: "Failed to delete Semester from Department",
