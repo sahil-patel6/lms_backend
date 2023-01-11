@@ -27,7 +27,7 @@ router.param("parentId",getParentById);
 
 /// CREATE SEMESTER ROUTE
 router.post(
-  "/semester/:adminId",
+  "/semester/create/admin/:adminId",
   [
     check("name")
       .isLength({ min: 3 })
@@ -57,7 +57,7 @@ router.get("/semesters/:departmentId/:parentId",isSignedIn,isAuthenticated,isPar
 
 /// UPDATE SEMESTER ROUTE
 router.put(
-  "/semester/:semesterId/:adminId",
+  "/semester/:semesterId/admin/:adminId",
   isSignedIn,
   isAuthenticated,
   isAdmin,
@@ -66,7 +66,7 @@ router.put(
 
 /// DELETE SEMESTER ROUTE
 router.delete(
-  "/semester/:semesterId/:adminId",
+  "/semester/:semesterId/admin/:adminId",
   isSignedIn,
   isAuthenticated,
   isAdmin,

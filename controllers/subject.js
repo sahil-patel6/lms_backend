@@ -98,11 +98,9 @@ exports.createSubject = (req, res,next) => {
 
 exports.updateSubject = (req, res) => {
     if (req?.file?.pic_url){
-      req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
-    }else{
-      req.body.pic_url = "";
+        console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
+        req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
     }
-    console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
     Subject.findByIdAndUpdate(
       { _id: req.subject._id },
       { $set: req.body},

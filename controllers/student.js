@@ -86,8 +86,6 @@ exports.updateStudent = (req, res) => {
   if (req?.file?.profile_pic) {
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
     req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
-  } else {
-    req.body.pic_url = "";
   }
   Student.findByIdAndUpdate(
       { _id: req.student._id },

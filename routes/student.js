@@ -30,7 +30,7 @@ router.param("teacherId", getTeacherById);
 router.param("parentId", getParentById);
 
 /// CREATE STUDENT ROUTE
-router.post("/student/create/:adminId",isSignedIn,isAuthenticated,isAdmin,setStudentUploadDir,
+router.post("/student/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,setStudentUploadDir,
     handleForm,
     check("name")
         .isLength({min: 3})
@@ -74,11 +74,11 @@ router.get( "/students/:semesterId/teacher/:teacherId", isSignedIn, isAuthentica
 router.get( "/students/:semesterId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getAllStudentsBySemester);
 router.get( "/students/:semesterId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getAllStudentsBySemester);
 
-/// UPDATE STUDENT ROUTE CAN EITHER BY USED BY ADMIN OR STUDENT HIMSELF
-router.put("/student/:studentId/:adminId", isSignedIn, isAuthenticated, isAdmin,setStudentUploadDir,handleForm, updateStudent);
+/// UPDATE STUDENT ROUTE CAN EITHER BE USED BY ADMIN OR STUDENT HIMSELF
+router.put("/student/:studentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin,setStudentUploadDir,handleForm, updateStudent);
 router.put("/student/:studentId", isSignedIn, isAuthenticated, isStudent,setStudentUploadDir,handleForm, updateStudent);
 
 /// DELETE STUDENT ROUTE
-router.delete("/student/:studentId/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteStudent);
+router.delete("/student/:studentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteStudent);
 
 module.exports = router;

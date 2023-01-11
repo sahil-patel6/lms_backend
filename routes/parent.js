@@ -25,7 +25,7 @@ router.param("adminId", getAdminById);
 router.param("teacherId", getTeacherById);
 
 /// CREATE PARENT ROUTE
-router.post("/parent/create/:adminId",isSignedIn,isAuthenticated,isAdmin,setParentUploadDir,
+router.post("/parent/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,setParentUploadDir,
     handleForm,
     check("name")
         .isLength({min: 3})
@@ -56,10 +56,10 @@ router.get("/parent/:parentId/admin/:adminId",isSignedIn,isAuthenticated,isAdmin
 router.get("/parent/:parentId/teacher/:teacherId",isSignedIn,isAuthenticated,isTeacher, getParent);
 
 /// UPDATE PARENT ROUTES CAN ONLY BE USED BY EITHER ADMIN OR PARENT HIMSELF
-router.put("/parent/:parentId/:adminId", isSignedIn, isAuthenticated, isAdmin,setParentUploadDir,handleForm, updateParent);
+router.put("/parent/:parentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin,setParentUploadDir,handleForm, updateParent);
 router.put("/parent/:parentId", isSignedIn, isAuthenticated, isParent,setParentUploadDir,handleForm, updateParent);
 
 /// DELETE PARENT ROUTE
-router.delete("/parent/:parentId/:adminId",isSignedIn,isAuthenticated,isAdmin, deleteParent);
+router.delete("/parent/:parentId/admin/:adminId",isSignedIn,isAuthenticated,isAdmin, deleteParent);
 
 module.exports = router;

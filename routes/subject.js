@@ -30,7 +30,7 @@ router.param("subjectId", getSubjectById);
 
 /// CREATE SUBJECT ROUTE
 router.post(
-  "/subject/:adminId",
+  "/subject/create/admin/:adminId",
   isSignedIn,
   isAuthenticated,
   isAdmin,
@@ -66,7 +66,7 @@ router.get( "/subjects/:semesterId/parent/:parentId", isSignedIn, isAuthenticate
 
 /// UPDATE ROUTE FOR SUBJECT
 router.put(
-  "/subject/:subjectId/:adminId",
+  "/subject/:subjectId/admin/:adminId",
   isSignedIn,
   isAuthenticated,
   isAdmin,
@@ -77,7 +77,7 @@ router.put(
 
 /// DELETE ROUTE FOR SUBJECT
 router.delete(
-  "/subject/:subjectId/:adminId",
+  "/subject/:subjectId/admin/:adminId",
   isSignedIn,
   isAuthenticated,
   isAdmin,

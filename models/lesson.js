@@ -13,26 +13,19 @@ var lessonSchema = new Schema(
         description: {
             type: String,
             trim: true,
-            default: "This information has not been added yet"
-        },
-        semester: {
-            type: ObjectId,
-            ref: "Semester",
-            required: true,
+            default: ""
         },
         subject: {
             type: ObjectId,
             ref: "Subject",
             required: true,
         },
-        department: {
-            type: ObjectId,
-            ref: "Department",
-            required: true,
-        },
-        files: [{
-            type: String,
-        }]
+        files: {
+            type: [{
+                type: String,
+            }],
+            default: [],
+        }
     },
     { timestamps: true }
 );

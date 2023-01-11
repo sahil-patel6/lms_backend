@@ -27,7 +27,7 @@ router.param("parentId", getParentById);
 
 /// CREATE DEPARTMENT ROUTE
 router.post(
-  "/department/:adminId",
+  "/department/create/admin/:adminId",
   [
     check("name")
       .isLength({ min: 3 })
@@ -59,9 +59,9 @@ router.get("/departments/student/:studentId", isSignedIn,isAuthenticated,isStude
 router.get("/departments/parent/:parentId", isSignedIn,isAuthenticated,isParent, getAllDepartments);
 
 /// UPDATE DEPARTMENT ROUTE
-router.put("/department/:departmentId/:adminId", isSignedIn, isAuthenticated, isAdmin, updateDepartment);
+router.put("/department/:departmentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, updateDepartment);
 
 /// DELETE DEPARTMENT ROUTE
-router.delete("/department/:departmentId/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteDepartment);
+router.delete("/department/:departmentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteDepartment);
 
 module.exports = router;

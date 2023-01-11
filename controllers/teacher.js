@@ -12,7 +12,9 @@ exports.setTeacherUploadDir = (req, res, next) => {
 }
 
 exports.getTeacherById = (req, res, next, id) => {
-    Teacher.findById(id).exec((err, teacher) => {
+    Teacher.findById(id)
+        .populate("subjects","_id name")
+        .exec((err, teacher) => {
         if (err || !teacher) {
             return res.status(400).json({
                 error: "No teacher Found",
@@ -63,8 +65,6 @@ exports.updateTeacher = (req, res) => {
     if (req?.file?.profile_pic) {
         console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
         req.body.profile_pic = `/uploads/teachers/${req.file.profile_pic.newFilename}`;
-    } else {
-        req.body.pic_url = "";
     }
     Teacher.findByIdAndUpdate(
         {_id: req.teacher._id},

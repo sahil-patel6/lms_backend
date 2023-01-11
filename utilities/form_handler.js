@@ -3,13 +3,14 @@ const formidable = require("formidable");
 exports.handleForm = (req, res,next) => {
   let form = new formidable.IncomingForm({
     keepExtensions: true,
+    multiples: true,
     maxFileSize: 3 * 1024 * 1024,
     uploadDir: req.uploadDir,
-    filter: function ({ name, originalFilename, mimetype }) {
-      // keep only images
-      req.isImage = mimetype && mimetype.includes("image");
-      return req.isImage;
-    },
+    // filter: function ({ name, originalFilename, mimetype }) {
+    //   // keep only images
+    //   req.isImage = mimetype && mimetype.includes("image");
+    //   return req.isImage;
+    // },
     filename: function (name, ext, part, form) {
       return `${Date.now()}${ext}`;
     },

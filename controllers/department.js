@@ -4,7 +4,14 @@ exports.getDepartmentById = (req, res, next, id) => {
     Department.findById(id)
             .populate({
                 path:'semesters',
-                populate:{path:"subjects",select:"-__v -createdAt -updatedAt"},
+                populate:{
+                    path:"subjects",
+                    select:"-__v -createdAt -updatedAt -semester -department",
+                    populate: {
+                        path: "lessons",
+                        select: "-__v -createdAt -updatedAt"
+                    }
+                },
                 select:'-__v -createdAt -updatedAt'
             }).exec((err, department) => {
         if (err || !department) {
@@ -27,11 +34,18 @@ exports.getDepartment = (req, res) => {
 
 exports.getAllDepartments = (req,res) => {
     Department.find()
-    .populate({
-        path:'semesters',
-        populate:{path:"subjects",select:"-__v -createdAt -updatedAt -department -semester"},
-        select:'-__v -createdAt -updatedAt -department'
-    }).select("-createdAt -updatedAt -__v")
+        .populate({
+            path:'semesters',
+            populate:{
+                path:"subjects",
+                select:"-__v -createdAt -updatedAt -semester -department",
+                populate: {
+                    path: "lessons",
+                    select: "-__v -createdAt -updatedAt"
+                }
+            },
+            select:'-__v -createdAt -updatedAt'
+        }).select("-createdAt -updatedAt -__v")
         .exec((err,departments)=>{
         if (err || !departments) {
             console.log(err);
@@ -52,7 +66,7 @@ exports.createDepartment = (req,res) => {
             res.status(400).json({
                 error: "Not able to save department in DB",
             });
-        } else {            
+        } else {
             department.__v = undefined;
             department.createdAt = undefined;
             department.updatedAt = undefined;
@@ -80,12 +94,12 @@ exports.updateDepartment = (req, res) => {
 
 exports.deleteDepartment = (req, res) => {
     Department.deleteOne({_id: req.department._id},(err, removedDepartment) => {
-        console.log(removedDepartment);
         if (err || removedDepartment.deletedCount === 0) {
             return res.status(400).json({
                 error: "Failed to delete Department",
             });
         }
+        /// TODO: DELETE ALL SEMESTERS, SUBJECTS, ASSIGNMENT, ASSIGNMENT SUBMISSION, STUDENTS
         res.json({
             message: `${req.department.name} Department Deleted Successfully`,
         });

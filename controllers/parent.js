@@ -62,8 +62,6 @@ exports.updateParent = (req, res) => {
   if (req?.file?.profile_pic) {
       console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
       req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
-    } else {
-      req.body.pic_url = "";
     }
     Parent.findByIdAndUpdate(
       { _id: req.parent._id },

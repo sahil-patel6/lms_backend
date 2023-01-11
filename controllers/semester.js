@@ -65,6 +65,7 @@ exports.createSemester = (req, res) => {
         error: "Not able to save semester in DB",
       });
     } else {
+      /// UPDATING DEPARTMENT COLLECTION TO ADD SEMESTER TO SEMESTER LIST
       Department.updateOne(
         { _id: semester.department },
         { $push: { semesters: semester._id } },
