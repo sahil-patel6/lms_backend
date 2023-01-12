@@ -15,10 +15,10 @@ exports.setSubjectUploadDir = (req, res, next)=>{
 
 exports.getSubjectById = (req, res, next, id) => {
   Subject.findById(id)
-    .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })
-    .populate({ path: "department", select: "-__v -createdAt -updatedAt" })
-    // .populate({ path: "lessons", select: "-__v -createdAt -updatedAt" })
-    // .populate({ path: "assignments", select: "-__v -createdAt -updatedAt" })
+      .populate("lessons","-__v -createdAt -updatedAt -subject")
+      .populate("assignments","-__v -createdAt -updatedAt -submissions -subject")
+      .populate("semester","_id name")
+      .populate("department", "_id name")
     .exec((err, subject) => {
       if (err || !subject) {
         return res.status(400).json({

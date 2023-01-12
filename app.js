@@ -16,6 +16,8 @@ const studentRoutes = require("./routes/student");
 const subjectRoutes = require("./routes/subject");
 const teacherRoutes = require("./routes/teacher");
 const lessonRoutes = require("./routes/lesson");
+const assignmentRoutes = require("./routes/assignment");
+const assignmentSubmissionRoutes = require("./routes/assignment_submission");
 const testRoutes = require("./routes/test");
 
 mongoose
@@ -42,8 +44,9 @@ app.use("/api/v1/", studentRoutes);
 app.use("/api/v1/", subjectRoutes);
 app.use("/api/v1/", teacherRoutes);
 app.use("/api/v1/",lessonRoutes)
+app.use("/api/v1/",assignmentRoutes)
+app.use("/api/v1/",assignmentSubmissionRoutes)
 app.use("/api/v1/", testRoutes);
-
 
 const port = process.env.PORT || 8000;
 

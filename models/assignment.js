@@ -2,18 +2,6 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
-const assignmentSubmissionSchema = mongoose.Schema({
-    submission: [String],
-    student: {
-        type: ObjectId,
-        ref: "Student"
-    },
-    assignment: {
-        type: ObjectId,
-        ref: "Assignment"
-    },
-  });
-
 var assignmentSchema = new Schema(
     {
         title: {
@@ -25,28 +13,34 @@ var assignmentSchema = new Schema(
         description: {
             type: String,
             trim: true,
-            default: "This information has not been added yet"
+            default: ""
         },
         marks: {
             type:Number,
             default: 10
-        },
-        semester: {
-            type: ObjectId,
-            ref: "Semester",
-            required: true,
         },
         subject: {
             type: ObjectId,
             ref: "Subject",
             required: true,
         },
-        department: {
-            type: ObjectId,
-            ref: "Department",
-            required: true,
+        dueDate: {
+            type: Date,
+            required: true
         },
-        submissions: [assignmentSubmissionSchema]
+        assignment_question_files: {
+            type: [{
+                type: String,
+            }],
+            default: []
+        },
+        submissions: {
+            type: [{
+                type: ObjectId,
+                ref: "AssignmentSubmission"
+            }],
+            default: []
+        }
     },
     { timestamps: true }
 );
