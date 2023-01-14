@@ -1,8 +1,8 @@
 const Lesson = require("../models/lesson");
 const Subject = require("../models/subject");
+const fs = require("fs");
 
 exports.setLessonUploadDir = (req, res, next)=>{
-    const fs = require('fs');
     const dir = `${__dirname}/../public/uploads/lessons/`;
 
     if (!fs.existsSync(dir)) {
@@ -76,23 +76,10 @@ exports.createLesson = (req, res,next) => {
                 error: "Not able to save lesson in DB",
             });
         } else {
-            Subject.updateOne(
-                { _id: lesson.subject },
-                { $push: { lessons: lesson._id } },
-                (err, op) => {
-                    if (err || op.modifiedCount === 0) {
-                        console.log(err);
-                        res.status(400).json({
-                            error: "Not able to save lesson in semester",
-                        });
-                    } else {
-                        lesson.__v = undefined;
-                        lesson.createdAt = undefined;
-                        lesson.updatedAt = undefined;
-                        res.json(lesson);
-                    }
-                }
-            );
+            lesson.__v = undefined;
+            lesson.createdAt = undefined;
+            lesson.updatedAt = undefined;
+            res.json(lesson);
         }
     });
 }
@@ -104,7 +91,7 @@ exports.updateLesson = (req, res) => {
             req.body.files.push(`/uploads/lessons/${f.newFilename}`)
         })
     }
-    Lesson.findByIdAndUpdate(
+    Lesson.findOneAndUpdate(
         { _id: req.lesson._id },
         { $set: req.body},
         { new: true })
@@ -122,27 +109,15 @@ exports.updateLesson = (req, res) => {
 };
 
 exports.deleteLesson = (req, res) => {
+    /// DELETING LESSON
     Lesson.deleteOne({ _id: req.lesson._id }, (err, removedLesson) => {
         if (err || removedLesson.deletedCount === 0) {
             return res.status(400).json({
                 error: "Failed to delete Lesson",
             });
         }
-        Subject.updateOne(
-            { _id: req.lesson.subject },
-            { $pull: { lessons: req.lesson._id } },
-            (err, op) => {
-                if (err || op.modifiedCount === 0) {
-                    console.log(err);
-                    res.status(400).json({
-                        error: "Failed to delete Lesson from Semester",
-                    });
-                } else {
-                    res.json({
-                        message: `${req.lesson.title} Lesson Deleted Successfully`,
-                    });
-                }
-            }
-        );
+        res.json({
+            message: `${req.lesson.title} Lesson Deleted Successfully`,
+        });
     });
 };

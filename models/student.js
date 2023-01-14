@@ -1,11 +1,11 @@
-var mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
-
-var Schema = mongoose.Schema;
+const {unlink:removeFile} = require("fs")
+const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
-var studentShema = new Schema(
+const studentSchema = new Schema(
     {
         name: {
             type: String,
@@ -66,7 +66,7 @@ var studentShema = new Schema(
     { timestamps: true }
 );
 
-studentShema
+studentSchema
     .virtual("plainPassword")
     .set(function (password) {
         this._password = password;
@@ -77,7 +77,7 @@ studentShema
         return this._password;
     });
 
-studentShema.methods = {
+studentSchema.methods = {
     securePassword: function (plainPassword) {
         if (!plainPassword) return "";
         try {
@@ -97,4 +97,44 @@ studentShema.methods = {
     }
 };
 
-module.exports = mongoose.model("Student", studentShema);
+studentSchema.pre("deleteOne",async function(next){
+    const student = await this.model.findOne(this.getQuery())
+    const Parent = require("./parent")
+    if (student.profile_pic){
+        removeFile(`${__dirname}/../public${student.profile_pic}`,(err)=>{
+            if (err){
+                console.log(err)
+            }else{
+                console.log("Successfully Deleted:",student.profile_pic)
+            }
+        })
+    }
+    try{
+        await Parent.updateOne({students:student._id},{$pull:{students:student._id}})
+    } catch (e) {
+        return next(e);
+    }
+    return next();
+})
+studentSchema.pre("deleteMany",async function (next){
+    const students = await this.model.find(this.getQuery())
+    const Parent = require("./parent")
+    for (const student of students) {
+        if (student.profile_pic){
+            removeFile(`${__dirname}/../public${student.profile_pic}`,(err)=>{
+                if (err){
+                    console.log(err)
+                }else{
+                    console.log("Successfully Deleted:",student.profile_pic)
+                }
+            })
+        }
+        try{
+            await Parent.updateOne({students:student._id},{$pull:{students:student._id}})
+        } catch (e) {
+            return next(e);
+        }
+    }
+    return next();
+})
+module.exports = mongoose.model("Student", studentSchema);

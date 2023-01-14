@@ -1,9 +1,7 @@
 const AssignmentSubmission = require("../models/assignment_submission");
-const Assignment = require("../models/assignment");
 const fs = require("fs");
 
 exports.setAssignmentSubmissionUploadDir = (req, res, next)=>{
-    const fs = require('fs');
     const dir = `${__dirname}/../public/uploads/assignment_submissions/`;
 
     if (!fs.existsSync(dir)) {
@@ -71,7 +69,7 @@ exports.createAssignmentSubmission = (req, res,next) => {
                 req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
             })
         }else{
-            req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`);
+            req.body.submission.push(`/uploads/assignment_submissions/${req.file.submission.newFilename}`);
         }
     }else{
         req.body.submission = [];
@@ -82,7 +80,7 @@ exports.createAssignmentSubmission = (req, res,next) => {
                 error: "You have already submitted the assignment so please try to update it."
             })
         }else if (!assignmentsubmission){
-            /// CREATE ASSSIGNMENT SUBMISSION IF AND ONLY IF THE STUDENT HAS NOT SUBMITTED BEFORE
+            /// CREATE ASSIGNMENT SUBMISSION IF AND ONLY IF THE STUDENT HAS NOT SUBMITTED BEFORE
             const assignment_submission = new AssignmentSubmission(req.body);
             assignment_submission.save((err, assignment_submission) => {
                 if (err || !assignment_submission) {
@@ -91,23 +89,10 @@ exports.createAssignmentSubmission = (req, res,next) => {
                         error: "Not able to save assignment_submission in DB",
                     });
                 } else {
-                    Assignment.updateOne(
-                        { _id: assignment_submission.assignment },
-                        { $push: { submissions: assignment_submission._id } },
-                        (err, op) => {
-                            if (err || op.modifiedCount === 0) {
-                                console.log(err);
-                                return res.status(400).json({
-                                    error: "Not able to save assignment_submission in Assignment",
-                                });
-                            } else {
-                                assignment_submission.__v = undefined;
-                                assignment_submission.createdAt = undefined;
-                                assignment_submission.updatedAt = undefined;
-                                return res.json(assignment_submission);
-                            }
-                        }
-                    );
+                    assignment_submission.__v = undefined;
+                    assignment_submission.createdAt = undefined;
+                    assignment_submission.updatedAt = undefined;
+                    return res.json(assignment_submission);
                 }
             });
         }else{
@@ -127,10 +112,10 @@ exports.updateAssignmentSubmission = (req, res) => {
                 req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
             })
         }else{
-            req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
+            req.body.submission.push(`/uploads/assignment_submissions/${req.file.submission.newFilename}`)
         }
     }
-    AssignmentSubmission.findByIdAndUpdate(
+    AssignmentSubmission.findOneAndUpdate(
         { _id: req.assignment_submission._id },
         { $set: req.body},
         { new: true })
@@ -160,21 +145,8 @@ exports.deleteAssignmentSubmission = (req, res) => {
                 error: "Failed to delete Assignment Submission",
             });
         }
-        Assignment.updateOne(
-            { _id: req.assignment_submission.assignment },
-            { $pull: { submissions: req.assignment_submission._id } },
-            (err, op) => {
-                if (err || op.modifiedCount === 0) {
-                    console.log(err);
-                    res.status(400).json({
-                        error: "Failed to delete Assignment Submission from Assignment",
-                    });
-                } else {
-                    res.json({
-                        message: `${req.assignment_submission.student.name} Assignment Submission Deleted Successfully`,
-                    });
-                }
-            }
-        );
+        res.json({
+            message: `${req.assignment_submission.student.name} Assignment Submission Deleted Successfully`,
+        });
     });
 };

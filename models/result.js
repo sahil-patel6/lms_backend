@@ -1,16 +1,17 @@
-var mongoose = require("mongoose");
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
-var resultSchema = new Schema(
+const resultSchema = new Schema(
     {
         result_name :{
             type:String,
             required: true,
         },
         date: {
-            type: String,
+            type: Date,
             required: true,
+            default: Date.now()
         },
         result: {
             type:String,
@@ -24,11 +25,6 @@ var resultSchema = new Schema(
         department: {
             type: ObjectId,
             ref: "Department",
-            required: true,
-        },
-        subject: {
-            type: ObjectId,
-            ref: "Subject",
             required: true,
         },
         semester: {

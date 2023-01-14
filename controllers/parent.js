@@ -1,4 +1,5 @@
 const Parent = require("../models/parent");
+const fs = require("fs");
 
 exports.setParentUploadDir = (req, res, next) => {
   const fs = require('fs');
@@ -63,7 +64,7 @@ exports.updateParent = (req, res) => {
       console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
       req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
     }
-    Parent.findByIdAndUpdate(
+    Parent.findOneAndUpdate(
       { _id: req.parent._id },
       { $set: req.body },
       { new: true })

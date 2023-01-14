@@ -1,5 +1,6 @@
 const Semester = require("../models/semester");
 const Department = require("../models/department");
+const Subject = require("../models/subject");
 
 exports.getSemesterById = (req, res, next, id) => {
   Semester.findById(id)
@@ -65,30 +66,16 @@ exports.createSemester = (req, res) => {
         error: "Not able to save semester in DB",
       });
     } else {
-      /// UPDATING DEPARTMENT COLLECTION TO ADD SEMESTER TO SEMESTER LIST
-      Department.updateOne(
-        { _id: semester.department },
-        { $push: { semesters: semester._id } },
-        (err, op) => {
-          if (err || op.modifiedCount === 0) {
-            console.log(err);
-            res.status(400).json({
-              error: "Not able to save semester in Department",
-            });
-          } else {
-            semester.createdAt = undefined;
-            semester.updatedAt = undefined;
-            semester.__v = undefined;
-            res.json(semester);
-          }
-        }
-      );
+      semester.createdAt = undefined;
+      semester.updatedAt = undefined;
+      semester.__v = undefined;
+      res.json(semester);
     }
   });
 };
 
 exports.updateSemester = (req, res) => {
-  Semester.findByIdAndUpdate(
+  Semester.findOneAndUpdate(
     { _id: req.semester._id },
     { $set: req.body },
     { new: true })
@@ -111,21 +98,8 @@ exports.deleteSemester = (req, res) => {
         error: "Failed to delete Semester",
       });
     }
-    Department.updateOne(
-      { _id: req.semester.department },
-      { $pull: { semesters: req.semester._id } },
-      (err, op) => {
-        if (err || op.modifiedCount === 0) {
-          console.log(err);
-          res.status(400).json({
-            error: "Failed to delete Semester from Department",
-          });
-        } else {
-          res.json({
-            message: `${req.semester.name} Semester Deleted Successfully`,
-          });
-        }
-      }
-    );
+    return res.json({
+        message: `${req.semester.name} Semester Deleted Successfully`,
+    });
   });
 };

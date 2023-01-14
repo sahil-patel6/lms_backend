@@ -44,16 +44,16 @@ router.post(
 );
 
 /// GET SEMESTER ROUTES FOR ALL USERS
-router.get("/semester/:semesterId/:adminId",isSignedIn,isAuthenticated,isAdmin, getSemester);
-router.get("/semester/:semesterId/:teacherId",isSignedIn,isAuthenticated,isTeacher, getSemester);
-router.get("/semester/:semesterId/:studentId",isSignedIn,isAuthenticated,isStudent, getSemester);
-router.get("/semester/:semesterId/:parentId",isSignedIn,isAuthenticated,isParent, getSemester);
+router.get("/semester/:semesterId/admin/:adminId",isSignedIn,isAuthenticated,isAdmin, getSemester);
+router.get("/semester/:semesterId/teacher/:teacherId",isSignedIn,isAuthenticated,isTeacher, getSemester);
+router.get("/semester/:semesterId/student/:studentId",isSignedIn,isAuthenticated,isStudent, getSemester);
+router.get("/semester/:semesterId/parent/:parentId",isSignedIn,isAuthenticated,isParent, getSemester);
 
 /// GET SEMESTER BY DEPARTMENT ID ROUTES FOR ALL USERS
-router.get("/semesters/:departmentId/:adminId",isSignedIn,isAuthenticated,isAdmin, getAllSemestersByDepartment);
-router.get("/semesters/:departmentId/:teacherId",isSignedIn,isAuthenticated,isTeacher, getAllSemestersByDepartment);
-router.get("/semesters/:departmentId/:studentId",isSignedIn,isAuthenticated,isStudent, getAllSemestersByDepartment);
-router.get("/semesters/:departmentId/:parentId",isSignedIn,isAuthenticated,isParent, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/admin/:adminId",isSignedIn,isAuthenticated,isAdmin, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/teacher/:teacherId",isSignedIn,isAuthenticated,isTeacher, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/student/:studentId",isSignedIn,isAuthenticated,isStudent, getAllSemestersByDepartment);
+router.get("/semesters/:departmentId/parent/:parentId",isSignedIn,isAuthenticated,isParent, getAllSemestersByDepartment);
 
 /// UPDATE SEMESTER ROUTE
 router.put(

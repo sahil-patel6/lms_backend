@@ -87,7 +87,7 @@ exports.updateStudent = (req, res) => {
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
     req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
   }
-  Student.findByIdAndUpdate(
+  Student.findOneAndUpdate(
       { _id: req.student._id },
       { $set: req.body },
       { new: true })

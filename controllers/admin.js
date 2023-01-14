@@ -56,7 +56,7 @@ exports.createAdmin = (req,res) =>{
 }
 
 exports.updateAdmin = (req, res) => {
-    Admin.findByIdAndUpdate(
+    Admin.findOneAndUpdate(
         { _id: req.admin._id },
         { $set: req.body },
         {new: true})

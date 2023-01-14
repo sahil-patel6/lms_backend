@@ -40,7 +40,7 @@ exports.getAllDepartments = (req,res) => {
                 path:"subjects",
                 select:"-__v -createdAt -updatedAt -semester -department",
                 populate: {
-                    path: "lessons",
+                    path: "lessons assignments",
                     select: "-__v -createdAt -updatedAt"
                 }
             },
@@ -76,7 +76,7 @@ exports.createDepartment = (req,res) => {
 }
 
 exports.updateDepartment = (req, res) => {
-    Department.findByIdAndUpdate(
+    Department.findOneAndUpdate(
         { _id: req.department._id },
         { $set: req.body },
         {new:true},
@@ -99,7 +99,6 @@ exports.deleteDepartment = (req, res) => {
                 error: "Failed to delete Department",
             });
         }
-        /// TODO: DELETE ALL SEMESTERS, SUBJECTS, ASSIGNMENT, ASSIGNMENT SUBMISSION, STUDENTS
         res.json({
             message: `${req.department.name} Department Deleted Successfully`,
         });

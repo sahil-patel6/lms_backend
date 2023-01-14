@@ -1,11 +1,12 @@
-var mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
+const {unlink: removeFile} = require("fs");
 const { ObjectId } = mongoose.Schema;
 
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
-var teacherSchema = new Schema(
+const teacherSchema = new Schema(
     {
         name: {
             type: String,
@@ -87,4 +88,32 @@ teacherSchema.methods = {
     }
 };
 
+teacherSchema.pre("deleteOne", async function(next){
+    const teacher = await this.model.findOne(this.getQuery())
+    if (teacher.profile_pic){
+        removeFile(`${__dirname}/../public${teacher.profile_pic}`,(err)=>{
+            if (err){
+                console.log(err)
+            }else{
+                console.log("Successfully Deleted:",teacher.profile_pic)
+            }
+        })
+    }
+    return next();
+})
+teacherSchema.pre("deleteMany",async function (next){
+    const teachers = await this.model.find(this.getQuery())
+    teachers.forEach((teacher)=>{
+        if (teacher.profile_pic){
+            removeFile(`${__dirname}/../public${teacher.profile_pic}`,(err)=>{
+                if (err){
+                    console.log(err)
+                }else{
+                    console.log("Successfully Deleted:",teacher.profile_pic)
+                }
+            })
+        }
+    })
+    return next();
+})
 module.exports = mongoose.model("Teacher", teacherSchema);

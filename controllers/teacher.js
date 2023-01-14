@@ -66,7 +66,7 @@ exports.updateTeacher = (req, res) => {
         console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
         req.body.profile_pic = `/uploads/teachers/${req.file.profile_pic.newFilename}`;
     }
-    Teacher.findByIdAndUpdate(
+    Teacher.findOneAndUpdate(
         {_id: req.teacher._id},
         {$set: req.body},
         {new: true})

@@ -39,12 +39,10 @@ exports.getSubject = (req, res) => {
 
 exports.getAllSubjectsBySemester = (req, res) => {
   Subject.find({ semester: req.params.semesterId })
-    // .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })
-    .populate('semester', "_id name")
-    // .populate({ path: "department", select: "-__v -createdAt -updatedAt" })
-    .populate('department',"_id name")
-    // .populate({ path: "lessons", select: "-__v -createdAt -updatedAt" })
-    // .populate({ path: "assignments", select: "-__v -createdAt -updatedAt" })
+      .populate("lessons","-__v -createdAt -updatedAt -subject")
+      .populate("assignments","-__v -createdAt -updatedAt -submissions -subject")
+      .populate("semester","_id name")
+      .populate("department", "_id name")
       .select("-createdAt -updatedAt -__v")
       .exec((err, subjects) => {
       if (err || !subjects) {
@@ -75,23 +73,10 @@ exports.createSubject = (req, res,next) => {
           error: "Not able to save subject in DB",
         });
       } else {
-        Semester.updateOne(
-          { _id: subject.semester },
-          { $push: { subjects: subject._id } },
-          (err, op) => {
-            if (err || op.modifiedCount === 0) {
-              console.log(err);
-              res.status(400).json({
-                error: "Not able to save subject in semester",
-              });
-            } else {
-              subject.__v = undefined;
-              subject.createdAt = undefined;
-              subject.updatedAt = undefined;
-              res.json(subject);
-            }
-          }
-        );
+          subject.__v = undefined;
+          subject.createdAt = undefined;
+          subject.updatedAt = undefined;
+          res.json(subject);
       }
     });
 }
@@ -101,7 +86,7 @@ exports.updateSubject = (req, res) => {
         console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
         req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
     }
-    Subject.findByIdAndUpdate(
+    Subject.findOneAndUpdate(
       { _id: req.subject._id },
       { $set: req.body},
       { new: true })
@@ -124,21 +109,8 @@ exports.deleteSubject = (req, res) => {
         error: "Failed to delete Subject",
       });
     }
-    Semester.updateOne(
-      { _id: req.subject.semester },
-      { $pull: { subjects: req.subject._id } },
-      (err, op) => {
-        if (err || op.modifiedCount === 0) {
-          console.log(err);
-          res.status(400).json({
-            error: "Failed to delete Subject from Semester",
-          });
-        } else {
-          res.json({
-            message: `${req.subject.name} Subject Deleted Successfully`,
-          });
-        }
-      }
-    );
+      res.json({
+          message: `${req.subject.name} Subject Deleted Successfully`,
+      });
   });
 };

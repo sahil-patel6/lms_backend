@@ -1,10 +1,10 @@
-var mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
 
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
-var adminSchema = new Schema(
+const adminSchema = new Schema(
     {
         name: {
             type:String,

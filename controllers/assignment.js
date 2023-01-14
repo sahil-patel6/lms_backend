@@ -1,9 +1,7 @@
 const Assignment = require("../models/assignment");
-const AssignmentSubmission = require("../models/assignment_submission");
-const Subject = require("../models/subject");
+const fs = require('fs');
 
 exports.setAssignmentUploadDir = (req, res, next)=>{
-    const fs = require('fs');
     const dir = `${__dirname}/../public/uploads/assignments/`;
 
     if (!fs.existsSync(dir)) {
@@ -20,7 +18,11 @@ exports.getAssignmentById = (req, res, next, id) => {
             select: "_id name semester department teacher",
             populate: {path: "semester department teacher", select:"_id name"}
         })
-        .exec((err, assignment) => {
+        .populate({
+            path:"submissions",
+            select: "-createdAt -updatedAt -__v -assignment",
+            populate:{path:"student",select:"_id name"}
+        }).exec((err, assignment) => {
             if (err || !assignment) {
                 return res.status(400).json({
                     error: "No Assignment Found",
@@ -68,7 +70,7 @@ exports.createAssignment = (req, res,next) => {
                 req.body.assignment_question_files.push(`/uploads/assignments/${f.newFilename}`)
             })
         }else{
-            req.body.assignment_question_files.push(`/uploads/assignments/${f.newFilename}`);
+            req.body.assignment_question_files.push(`/uploads/assignments/${req.file.assignment_question_files.newFilename}`);
         }
     }else{
         req.body.assignment_question_files = [];
@@ -81,23 +83,10 @@ exports.createAssignment = (req, res,next) => {
                 error: "Not able to save assignment in DB",
             });
         } else {
-            Subject.updateOne(
-                { _id: assignment.subject },
-                { $push: { assignments: assignment._id } },
-                (err, op) => {
-                    if (err || op.modifiedCount === 0) {
-                        console.log(err);
-                        res.status(400).json({
-                            error: "Not able to save assignment in semester",
-                        });
-                    } else {
-                        assignment.__v = undefined;
-                        assignment.createdAt = undefined;
-                        assignment.updatedAt = undefined;
-                        res.json(assignment);
-                    }
-                }
-            );
+            assignment.__v = undefined;
+            assignment.createdAt = undefined;
+            assignment.updatedAt = undefined;
+            res.json(assignment);
         }
     });
 }
@@ -110,10 +99,10 @@ exports.updateAssignment = (req, res) => {
                 req.body.assignment_question_files.push(`/uploads/assignments/${f.newFilename}`)
             })
         }else{
-            req.body.assignment_question_files.push(`/uploads/assignments/${f.newFilename}`)
+            req.body.assignment_question_files.push(`/uploads/assignments/${req.file.assignment_question_files.newFilename}`);
         }
     }
-    Assignment.findByIdAndUpdate(
+    Assignment.findOneAndUpdate(
         { _id: req.assignment._id },
         { $set: req.body},
         { new: true })
@@ -132,36 +121,16 @@ exports.updateAssignment = (req, res) => {
 };
 
 exports.deleteAssignment = (req, res) => {
+    /// DELETE ASSIGNMENT
     Assignment.deleteOne({ _id: req.assignment._id }, (err, removedAssignment) => {
-        if (err || removedAssignment.deletedCount === 0) {
+        if (err) {
+            console.log(err);
             return res.status(400).json({
                 error: "Failed to delete Assignment",
             });
         }
-        Subject.updateOne(
-            {_id: req.assignment.subject},
-            {$pull: {assignments: req.assignment._id}},
-            (err, op) => {
-                if (err || op.modifiedCount === 0) {
-                    console.log(err);
-                    return res.status(400).json({
-                        error: "Failed to delete Assignment from Semester",
-                    });
-                }
-                AssignmentSubmission.deleteMany(
-                    {assignment: req.assignment._id},
-                    (err, op) => {
-                        if (err) {
-                            return res.status(400).json({
-                                error: "Failed to delete Assignment Submissions from Assignment",
-                            });
-                        }
-                        return res.json({
-                            message: `${req.assignment.title} Assignment Deleted Successfully`,
-                        });
-                    }
-                );
-            }
-        );
+        res.json({
+            message: `${req.assignment.title} Assignment Deleted Successfully`,
+        })
     });
 };

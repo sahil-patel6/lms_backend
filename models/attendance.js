@@ -1,12 +1,13 @@
-var mongoose = require("mongoose");
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
-var attendanceSchema = new Schema(
+const attendanceSchema = new Schema(
     {
         date: {
-            type: String,
+            type: Date,
             required: true,
+            default: Date.now(),
         },
         student: {
             type: ObjectId,
