@@ -1,6 +1,8 @@
 const Lesson = require("../models/lesson");
 const Subject = require("../models/subject");
+const Teacher = require("../models/teacher")
 const fs = require("fs");
+const {unlink: removeFile} = require("fs");
 
 exports.setLessonUploadDir = (req, res, next)=>{
     const dir = `${__dirname}/../public/uploads/lessons/`;
@@ -59,6 +61,23 @@ exports.getAllLessonsBySubject = (req, res) => {
         });
 };
 
+exports.checkIfSubjectAndTeacherExistsAndAreValid = (req,res,next) =>{
+    Subject.findById(req.body.subject,(err,subject)=>{
+        if (err || !subject || !subject?.teacher){
+            return res.status(400).json({
+                error: "No Subject Found"
+            })
+        }
+        console.log(req.teacher._id,subject.teacher);
+        if (req.teacher._id.toString() !== subject.teacher._id.toString()){
+            return res.status(400).json({
+                error: "Forbidden to create lesson"
+            })
+        }
+        next();
+    })
+}
+
 exports.createLesson = (req, res,next) => {
     if (req?.file?.files){
         req.body.files = []
@@ -86,6 +105,18 @@ exports.createLesson = (req, res,next) => {
 
 exports.updateLesson = (req, res) => {
     if(req?.file?.files){
+        /// HERE WE CHECK IF LESSON HAS FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
+        if (req.lesson.files){
+            req.lesson.files.forEach(file=>{
+                removeFile(`${__dirname}/../public${file}`,(err)=>{
+                    if (err){
+                        console.log(err);
+                    }else{
+                        console.log("Successfully Deleted:",file);
+                    }
+                })
+            })
+        }
         req.body.files = []
         req.file.files.forEach((f)=>{
             req.body.files.push(`/uploads/lessons/${f.newFilename}`)

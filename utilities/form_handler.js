@@ -23,6 +23,9 @@ exports.handleForm = (req, res,next) => {
       });
     }
     try{
+      if(fields?.subjects){
+        fields.subjects = JSON.parse(fields.subjects);
+      }
       if(fields?.students){
         fields.students = JSON.parse(fields.students);
       }
@@ -31,7 +34,7 @@ exports.handleForm = (req, res,next) => {
         error: "An error occurred: "+ e
       })
     }
-    req.body = fields;
+    req.body = {...fields};
     req.file = file;
     next();
   });

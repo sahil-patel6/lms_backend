@@ -6,6 +6,7 @@ const {
   getSubjectById,
   getSubject,
   getAllSubjectsBySemester,
+  checkIfDepartmentAndSemesterExists,
   updateSubject,
   createSubject,
   deleteSubject,
@@ -47,8 +48,9 @@ router.post(
         .withMessage("Semester should be a semester ID"),
     check("department")
         .isMongoId()
-        .withMessage("Department should be a semester ID"),
+        .withMessage("Department should be a department ID"),
     validateAllErrors,
+  checkIfDepartmentAndSemesterExists,
   createSubject
 );
 

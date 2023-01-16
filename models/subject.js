@@ -42,14 +42,17 @@ const subjectSchema = new Schema(
     semester: {
       type: ObjectId,
       ref: "Semester",
+      required: true
     },
     department: {
       type: ObjectId,
       ref: "Department",
+      required: true
     },
     teacher: {
       type: ObjectId,
       ref: "Teacher",
+      default: null
     },
   },
   { timestamps: true }

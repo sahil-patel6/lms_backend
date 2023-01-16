@@ -10,6 +10,7 @@ const {
     getStudentById,
     getStudent,
     getAllStudentsBySemester,
+    checkIfDepartmentAndSemesterExists,
     createStudent,
     updateStudent,
     deleteStudent,
@@ -60,6 +61,7 @@ router.post("/student/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,
         .isLength({min: 8})
         .withMessage("password should be minimum 8 characters long"),
     validateAllErrors,
+    checkIfDepartmentAndSemesterExists,
     createStudent)
 
 /// GET STUDENT ROUTE FOR ALL USERS

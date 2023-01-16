@@ -6,6 +6,7 @@ const {
     getAssignmentById,
     getAssignment,
     getAllAssignmentsBySubject,
+    checkIfSubjectAndTeacherExistsAndAreValid,
     updateAssignment,
     createAssignment,
     deleteAssignment,
@@ -51,6 +52,7 @@ router.post(
     //     .isEmpty()
     //     .withMessage("dueDate should be date"),
     validateAllErrors,
+    checkIfSubjectAndTeacherExistsAndAreValid,
     createAssignment
 );
 

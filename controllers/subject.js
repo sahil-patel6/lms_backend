@@ -1,6 +1,6 @@
 const Subject = require("../models/subject");
-const Semester = require("../models/semester");
-const fs = require("fs");
+const Department = require("../models/department");
+const {unlink:removeFile} = require("fs")
 
 exports.setSubjectUploadDir = (req, res, next)=>{
     const fs = require('fs');
@@ -19,6 +19,7 @@ exports.getSubjectById = (req, res, next, id) => {
       .populate("assignments","-__v -createdAt -updatedAt -submissions -subject")
       .populate("semester","_id name")
       .populate("department", "_id name")
+      .populate("teacher","_id name")
     .exec((err, subject) => {
       if (err || !subject) {
         return res.status(400).json({
@@ -43,6 +44,7 @@ exports.getAllSubjectsBySemester = (req, res) => {
       .populate("assignments","-__v -createdAt -updatedAt -submissions -subject")
       .populate("semester","_id name")
       .populate("department", "_id name")
+      .populate("teacher","_id name")
       .select("-createdAt -updatedAt -__v")
       .exec((err, subjects) => {
       if (err || !subjects) {
@@ -57,6 +59,22 @@ exports.getAllSubjectsBySemester = (req, res) => {
       }
     });
 };
+
+exports.checkIfDepartmentAndSemesterExists = (req,res,next) =>{
+    Department.findById(req.body.department,(err,department)=>{
+        if (err || !department){
+            return res.status(400).json({
+                error: "No department found"
+            })
+        }
+        if (!department.semesters.find(semester=>semester==req.body.semester)){
+            return res.status(400).json({
+                error: "No Semester found"
+            })
+        }
+        next();
+    })
+}
 
 exports.createSubject = (req, res,next) => {
     if (req?.file?.pic_url){
@@ -83,6 +101,16 @@ exports.createSubject = (req, res,next) => {
 
 exports.updateSubject = (req, res) => {
     if (req?.file?.pic_url){
+        /// HERE WE CHECK IF SUBJECT HAS PIC_URL AND IF IT DOES THEN WE REMOVE PIC FROM FILE SYSTEM
+        if (req.subject.pic_url){
+            removeFile(`${__dirname}/../public${req.subject.pic_url}`,(err)=>{
+                if (err){
+                    console.log(err);
+                }else{
+                    console.log("Successfully Deleted:",req.subject.pic_url);
+                }
+            })
+        }
         console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
         req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
     }

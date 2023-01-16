@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
 const {unlink: removeFile} = require("fs");
+const Semester = require("./semester");
+const Subject = require("./subject");
 const { ObjectId } = mongoose.Schema;
 
 const Schema = mongoose.Schema;
@@ -88,8 +90,28 @@ teacherSchema.methods = {
     }
 };
 
+teacherSchema.pre("save",async function(next){
+    const Subject = require("./subject")
+    try{
+        for (const subject of this.subjects){
+            await Subject.updateOne({_id:subject},{teacher: this._id});
+        }
+    }catch (e) {
+        return next(e);
+    }
+    return next();
+})
+
 teacherSchema.pre("deleteOne", async function(next){
     const teacher = await this.model.findOne(this.getQuery())
+    const Subject = require("./subject")
+    try{
+        for (const subject of teacher.subjects){
+            await Subject.updateOne({_id:subject},{teacher: null});
+        }
+    }catch (e) {
+        return next(e);
+    }
     if (teacher.profile_pic){
         removeFile(`${__dirname}/../public${teacher.profile_pic}`,(err)=>{
             if (err){
@@ -103,7 +125,15 @@ teacherSchema.pre("deleteOne", async function(next){
 })
 teacherSchema.pre("deleteMany",async function (next){
     const teachers = await this.model.find(this.getQuery())
-    teachers.forEach((teacher)=>{
+    const Subject = require("./subject")
+    for (const teacher of teachers) {
+        try{
+            for (const subject of teacher.subjects){
+                await Subject.updateOne({_id:subject},{teacher: null});
+            }
+        }catch (e) {
+            next(e);
+        }
         if (teacher.profile_pic){
             removeFile(`${__dirname}/../public${teacher.profile_pic}`,(err)=>{
                 if (err){
@@ -113,7 +143,7 @@ teacherSchema.pre("deleteMany",async function (next){
                 }
             })
         }
-    })
+    }
     return next();
 })
 module.exports = mongoose.model("Teacher", teacherSchema);

@@ -1,4 +1,7 @@
 const Teacher = require("../models/teacher");
+const Subject = require("../models/subject")
+const {unlink: removeFile} = require("fs");
+const mongoose = require("mongoose")
 
 exports.setTeacherUploadDir = (req, res, next) => {
     const fs = require('fs');
@@ -36,6 +39,27 @@ exports.getTeacher = (req, res) => {
     return res.json(req.teacher);
 };
 
+exports.checkIfSubjectsExists = (req,res,next) =>{
+    try{
+        req.body.subjects.map(subject=>{
+            return new mongoose.mongo.ObjectId(subject)
+        })
+    } catch (e){
+        console.log(e);
+        return res.status(400).json({
+            error: "An error occurred while processing subjects"
+        })
+    }
+    Subject.find({_id:{$in:req.body.subjects}},(err,subjects)=>{
+        if (err || !subjects || subjects.length !== req.body.subjects.length){
+            return res.status(400).json({
+                error: "Subjects not found"
+            })
+        }
+        next();
+    })
+}
+
 exports.createTeacher = (req, res) => {
     if (req?.file?.profile_pic) {
         console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
@@ -63,6 +87,16 @@ exports.createTeacher = (req, res) => {
 
 exports.updateTeacher = (req, res) => {
     if (req?.file?.profile_pic) {
+        /// HERE WE CHECK IF TEACHER HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
+        if (req.teacher.profile_pic){
+            removeFile(`${__dirname}/../public${req.teacher.profile_pic}`,(err)=>{
+                if (err){
+                    console.log(err);
+                }else{
+                    console.log("Successfully Deleted:",req.teacher.profile_pic);
+                }
+            })
+        }
         console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
         req.body.profile_pic = `/uploads/teachers/${req.file.profile_pic.newFilename}`;
     }

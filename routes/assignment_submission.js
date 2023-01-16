@@ -6,6 +6,7 @@ const {
     getAssignmentSubmissionById,
     getAssignmentSubmission,
     getAllAssignmentSubmissionsByAssignment,
+    checkIfAssignmentAndStudentExistsAndAreValid,
     updateAssignmentSubmission,
     createAssignmentSubmission,
     deleteAssignmentSubmission,
@@ -42,6 +43,7 @@ router.post(
         .isMongoId()
         .withMessage("assignment should be assignment Id"),
     validateAllErrors,
+    checkIfAssignmentAndStudentExistsAndAreValid,
     createAssignmentSubmission
 );
 

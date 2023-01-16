@@ -5,6 +5,7 @@ const {
   getSemesterById,
   getSemester,
   getAllSemestersByDepartment,
+  checkIfDepartmentExists,
   updateSemester,
   createSemester,
   deleteSemester,
@@ -28,18 +29,17 @@ router.param("parentId",getParentById);
 /// CREATE SEMESTER ROUTE
 router.post(
   "/semester/create/admin/:adminId",
-  [
-    check("name")
-      .isLength({ min: 3 })
-      .withMessage("name should be atleast 3 char long"),
-    check("department")
-      .isMongoId()
-      .withMessage("Department should have a department id"),
-  ],
-  validateAllErrors,
   isSignedIn,
   isAuthenticated,
   isAdmin,
+  check("name")
+      .isLength({ min: 3 })
+      .withMessage("name should be atleast 3 char long"),
+  check("department")
+      .isMongoId()
+      .withMessage("Department should have a department id"),
+    validateAllErrors,
+  checkIfDepartmentExists,
   createSemester
 );
 

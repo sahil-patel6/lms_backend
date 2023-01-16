@@ -1,5 +1,8 @@
 const Parent = require("../models/parent");
 const fs = require("fs");
+const {unlink: removeFile} = require("fs");
+const mongoose = require("mongoose");
+const Student = require("../models/student");
 
 exports.setParentUploadDir = (req, res, next) => {
   const fs = require('fs');
@@ -34,6 +37,36 @@ exports.getParent = (req, res) => {
   return res.json(req.parent);
 };
 
+
+exports.checkIfStudentsExists = (req,res,next) =>{
+  try{
+    req.body.students.map(student=>{
+      return new mongoose.mongo.ObjectId(student)
+    })
+  } catch (e){
+    console.log(e);
+    return res.status(400).json({
+      error: "An error occurred while processing subjects"
+    })
+  }
+  Parent.find({students:{$in:req.body.students}},(err,parents)=>{
+    if (err || !parents || parents.length !== 0){
+      return res.status(400).json({
+        error: "Students already have parents"
+      })
+    }
+    console.log(parents);
+    Student.find({_id:{$in:req.body.students}},(err,students)=>{
+      if (err || !students || students.length !== req.body.students.length){
+        return res.status(400).json({
+          error: "Students not found"
+        })
+      }
+      next();
+    })
+  })
+}
+
 exports.createParent = (req, res) => {
     if (req?.file?.profile_pic) {
       console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
@@ -61,6 +94,16 @@ exports.createParent = (req, res) => {
 
 exports.updateParent = (req, res) => {
   if (req?.file?.profile_pic) {
+    /// HERE WE CHECK IF STUDENT HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
+    if (req.parent.profile_pic){
+      removeFile(`${__dirname}/../public${req.parent.profile_pic}`,(err)=>{
+        if (err){
+          console.log(err);
+        }else{
+          console.log("Successfully Deleted:",req.parent.profile_pic);
+        }
+      })
+    }
       console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
       req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
     }

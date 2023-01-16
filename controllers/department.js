@@ -12,7 +12,7 @@ exports.getDepartmentById = (req, res, next, id) => {
                         select: "-__v -createdAt -updatedAt"
                     }
                 },
-                select:'-__v -createdAt -updatedAt'
+                select:'-__v -createdAt -updatedAt -department'
             }).exec((err, department) => {
         if (err || !department) {
             return res.status(400).json({

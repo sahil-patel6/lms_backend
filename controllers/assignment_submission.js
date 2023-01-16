@@ -1,5 +1,8 @@
 const AssignmentSubmission = require("../models/assignment_submission");
 const fs = require("fs");
+const {unlink: removeFile} = require("fs");
+const Assignment = require("../models/assignment");
+const Student = require("../models/student")
 
 exports.setAssignmentSubmissionUploadDir = (req, res, next)=>{
     const dir = `${__dirname}/../public/uploads/assignment_submissions/`;
@@ -61,6 +64,25 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
         });
 };
 
+exports.checkIfAssignmentAndStudentExistsAndAreValid = (req,res,next) =>{
+    Assignment.findById(req.body.assignment)
+        .populate("subject")
+        .exec((err,assignment)=>{
+        if (err || !assignment){
+            return res.status(400).json({
+                error: "No Assignment Found"
+            })
+        }
+        console.log(req.student.semester,assignment.subject.semester)
+        if (req.student.semester.toString() !== assignment.subject.semester.toString()){
+            return res.status(400).json({
+                error: "Forbidden to create assignment submission"
+            })
+        }
+        next();
+    })
+}
+
 exports.createAssignmentSubmission = (req, res,next) => {
     if (req?.file?.submission){
         req.body.submission = []
@@ -107,6 +129,18 @@ exports.createAssignmentSubmission = (req, res,next) => {
 exports.updateAssignmentSubmission = (req, res) => {
     if(req?.file?.submission){
         req.body.submission = []
+        /// HERE WE CHECK IF ASSIGNMENT SUBMISSIONS HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
+        if (req.assignment_submission.submission){
+            req.assignment_submission.submission.forEach(assignment_question_file=>{
+                removeFile(`${__dirname}/../public${assignment_question_file}`,(err)=>{
+                    if (err){
+                        console.log(err);
+                    }else{
+                        console.log("Successfully Deleted:",assignment_question_file);
+                    }
+                })
+            })
+        }
         if(Array.isArray(req.file.submission)){
             req.file.submission.forEach((f)=>{
                 req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)

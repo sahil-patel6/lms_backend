@@ -1,6 +1,5 @@
 const Semester = require("../models/semester");
 const Department = require("../models/department");
-const Subject = require("../models/subject");
 
 exports.getSemesterById = (req, res, next, id) => {
   Semester.findById(id)
@@ -26,6 +25,20 @@ exports.getSemesterById = (req, res, next, id) => {
       next();
     });
 };
+
+exports.checkIfDepartmentExists = (req,res,next)=>{
+    Department.findById(req.body.department,(err,department)=>{
+        if (err || !department){
+            console.log(err);
+            return res.status(400).json({
+                error: "No Department found",
+            })
+        }else{
+            req.department = department._doc;
+            return next();
+        }
+    })
+}
 
 exports.getSemester = (req, res) => {
   req.semester.createdAt = undefined;
@@ -99,7 +112,7 @@ exports.deleteSemester = (req, res) => {
       });
     }
     return res.json({
-        message: `${req.semester.name} Semester Deleted Successfully`,
+        message: `${req.semester.name} Semester From ${req.semester.department} Deleted Successfully`,
     });
   });
 };

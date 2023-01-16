@@ -28,21 +28,19 @@ router.param("parentId", getParentById);
 /// CREATE DEPARTMENT ROUTE
 router.post(
   "/department/create/admin/:adminId",
-  [
-    check("name")
-      .isLength({ min: 3 })
-      .withMessage("name should be atleast 3 char long"),
-    check("description")
-      .isLength({ min: 3 })
-      .withMessage("description should have some content"),
-    check("total_years")
-      .isNumeric()
-      .withMessage("total_years should have a number"),
-  ],
-  validateAllErrors,
   isSignedIn,
   isAuthenticated,
   isAdmin,
+  check("name")
+      .isLength({ min: 3 })
+      .withMessage("name should be atleast 3 char long"),
+  check("description")
+      .isLength({ min: 3 })
+      .withMessage("description should have some content"),
+  check("total_years")
+      .isNumeric()
+      .withMessage("total_years should have a number"),
+    validateAllErrors,
   createDepartment
 );
 

@@ -5,6 +5,7 @@ const router = express.Router();
 const {
     getTeacherById,
     getTeacher,
+    checkIfSubjectsExists,
     updateTeacher,
     createTeacher,
     deleteTeacher,
@@ -44,13 +45,13 @@ router.post("/teacher/create/admin/:adminId", isSignedIn, isAuthenticated, isAdm
     check("address")
         .isLength({min: 5})
         .withMessage("Address cannot be empty or small"),
-    check("students")
+    check("subjects")
         .isArray()
         .withMessage("Subjects should contain subject id's array"),
     check("plainPassword")
         .isLength({min: 8})
         .withMessage("password should be minimum 8 characters long"),
-    validateAllErrors, createTeacher);
+    validateAllErrors,checkIfSubjectsExists, createTeacher);
 
 /// GET ROUTES FOR ALL USERS
 router.get("/teacher/:teacherId",isSignedIn,isAuthenticated,isTeacher, getTeacher);

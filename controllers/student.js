@@ -1,5 +1,7 @@
 const Student = require("../models/student");
 const Subject = require("../models/subject");
+const Department = require("../models/department");
+const {unlink: removeFile} = require("fs");
 
 exports.setStudentUploadDir = (req, res, next) => {
   const fs = require('fs');
@@ -34,6 +36,22 @@ exports.getStudent = (req, res) => {
   req.student.__v = undefined;
   return res.json(req.student);
 };
+
+exports.checkIfDepartmentAndSemesterExists = (req,res,next) =>{
+  Department.findById(req.body.department,(err,department)=>{
+    if (err || !department){
+      return res.status(400).json({
+        error: "No department found"
+      })
+    }
+    if (!department.semesters.find(semester=>semester==req.body.semester)){
+      return res.status(400).json({
+        error: "No Semester found"
+      })
+    }
+    next();
+  })
+}
 
 exports.getAllStudentsBySemester = (req, res) => {
   Student.find({ semester: req.params.semesterId })
@@ -84,6 +102,16 @@ exports.createStudent = (req, res) => {
 
 exports.updateStudent = (req, res) => {
   if (req?.file?.profile_pic) {
+    /// HERE WE CHECK IF STUDENT HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
+    if (req.student.profile_pic){
+      removeFile(`${__dirname}/../public${req.student.profile_pic}`,(err)=>{
+        if (err){
+          console.log(err);
+        }else{
+          console.log("Successfully Deleted:",req.student.profile_pic);
+        }
+      })
+    }
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
     req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
   }

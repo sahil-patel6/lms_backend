@@ -9,6 +9,7 @@ const {
 const {
     getParentById,
     getParent,
+    checkIfStudentsExists,
     createParent,
     updateParent,
     deleteParent,
@@ -48,6 +49,7 @@ router.post("/parent/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,s
     check("plainPassword")
         .isLength({min: 8})
         .withMessage("password should be minimum 8 characters long"),
+    checkIfStudentsExists,
     createParent)
 
 /// GET PARENT ROUTES

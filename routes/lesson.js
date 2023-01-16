@@ -6,6 +6,7 @@ const {
     getLessonById,
     getLesson,
     getAllLessonsBySubject,
+    checkIfSubjectAndTeacherExistsAndAreValid,
     updateLesson,
     createLesson,
     deleteLesson,
@@ -45,6 +46,7 @@ router.post(
         .isMongoId()
         .withMessage("Subject should be a subject ID"),
     validateAllErrors,
+    checkIfSubjectAndTeacherExistsAndAreValid,
     createLesson
 );
 

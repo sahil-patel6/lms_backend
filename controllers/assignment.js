@@ -1,5 +1,8 @@
 const Assignment = require("../models/assignment");
 const fs = require('fs');
+const Subject = require("../models/subject");
+const Teacher = require("../models/teacher");
+const {unlink: removeFile} = require("fs");
 
 exports.setAssignmentUploadDir = (req, res, next)=>{
     const dir = `${__dirname}/../public/uploads/assignments/`;
@@ -62,6 +65,23 @@ exports.getAllAssignmentsBySubject = (req, res) => {
         });
 };
 
+exports.checkIfSubjectAndTeacherExistsAndAreValid = (req,res,next) =>{
+    Subject.findById(req.body.subject,(err,subject)=>{
+        if (err || !subject || !subject?.teacher){
+            return res.status(400).json({
+                error: "No Subject Found"
+            })
+        }
+        console.log(req.teacher._id,subject.teacher);
+        if (req.teacher._id.toString() !== subject.teacher._id.toString()){
+            return res.status(400).json({
+                error: "Forbidden to create lesson"
+            })
+        }
+        next();
+    })
+}
+
 exports.createAssignment = (req, res,next) => {
     if (req?.file?.assignment_question_files){
         req.body.assignment_question_files = []
@@ -94,6 +114,18 @@ exports.createAssignment = (req, res,next) => {
 exports.updateAssignment = (req, res) => {
     if(req?.file?.assignment_question_files){
         req.body.assignment_question_files = []
+        /// HERE WE CHECK IF ASSIGNMENT HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
+        if (req.assignment.assignment_question_files){
+            req.assignment.assignment_question_files.forEach(assignment_question_file=>{
+                removeFile(`${__dirname}/../public${assignment_question_file}`,(err)=>{
+                    if (err){
+                        console.log(err);
+                    }else{
+                        console.log("Successfully Deleted:",assignment_question_file);
+                    }
+                })
+            })
+        }
         if(Array.isArray(req.file.assignment_question_files)){
             req.file.assignment_question_files.forEach((f)=>{
                 req.body.assignment_question_files.push(`/uploads/assignments/${f.newFilename}`)
