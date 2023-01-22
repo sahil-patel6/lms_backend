@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
+const {removeFile} = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
-
-const {unlink: removeFile} = require("fs");
 
 const subjectSchema = new Schema(
   {
@@ -70,63 +69,38 @@ subjectSchema.pre("save",async function(next){
 
 subjectSchema.pre("deleteOne",async function(next){
     const subject = await this.model.findOne(this.getQuery());
+    await preDeleteSubject(subject,next);
+    return next();
+})
+
+subjectSchema.pre("deleteMany", async function(next){
+    const subjects = await this.model.find(this.getQuery())
+    for (const subject of subjects) {
+        await preDeleteSubject(subject,next);
+    }
+    return next();
+})
+
+const preDeleteSubject = async (subject,next)=>{
     const Semester = require("./semester")
     const Lesson = require("./lesson")
     const Assignment = require("./assignment")
     const Teacher = require("./teacher")
-    /// DELETING SUBJECT PIC URL IF IT EXISTS
-    if (subject.pic_url){
-        removeFile(`${__dirname}/../public${subject.pic_url}`,(err)=>{
-            if (err){
-                console.log(err)
-            }else{
-                console.log("Successfully Deleted:",subject.pic_url)
-            }
-        })
-    }
     try{
-        /// REMOVING SUBJECT FROM SEMESTER
-        await Semester.updateOne({ _id: subject.semester }, { $pull: { subjects: subject._id } });
+        /// UPDATING SEMESTER BY REMOVING THE SUBJECT FROM ITS SUBJECTS LIST
+        await Semester.updateOne({ _id: subject.semester },{ $pull: { subjects: subject._id } });
         /// REMOVING ALL LESSONS FROM THIS SUBJECT
         await Lesson.deleteMany({subject:subject._id})
         /// REMOVING ALL ASSIGNMENT FROM THIS SUBJECT
         await Assignment.deleteMany({subject:subject._id});
         /// REMOVING SUBJECT FROM TEACHER
         await Teacher.updateOne({subject:subject._id},{$pull:{subjects:subject._id}})
-    }catch (e) {
+    } catch (e){
         return next(e);
     }
-    return next();
-})
-
-subjectSchema.pre("deleteMany", async function(next){
-    const subjects = await this.model.find(this.getQuery())
-    const Semester = require("./semester")
-    const Lesson = require("./lesson")
-    const Assignment = require("./assignment")
-    const Teacher = require("./teacher")
-    for (const subject of subjects) {
-        removeFile(`${__dirname}/../public${subject.pic_url}`,(err)=>{
-            if (err){
-                console.log(err);
-            }else{
-                console.log("Successfully deleted:",subject.pic_url)
-            }
-        })
-        try{
-            await Semester.updateOne({ _id: subject.semester },{ $pull: { subjects: subject._id } });
-
-            /// REMOVING ALL LESSONS FROM THIS SUBJECT
-            await Lesson.deleteMany({subject:subject._id})
-            /// REMOVING ALL ASSIGNMENT FROM THIS SUBJECT
-            await Assignment.deleteMany({subject:subject._id});
-            /// REMOVING SUBJECT FROM TEACHER
-            await Teacher.updateOne({subject:subject._id},{$pull:{subjects:subject._id}})
-        } catch (e){
-            return next(e);
-        }
+    if (subject.pic_url){
+        removeFile(subject.pic_url)
     }
-    return next();
-})
+}
 
 module.exports = mongoose.model("Subject", subjectSchema);

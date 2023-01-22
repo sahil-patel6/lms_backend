@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
-const {unlink:removeFile} = require("fs")
+const {removeFile} = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
@@ -99,42 +99,26 @@ studentSchema.methods = {
 
 studentSchema.pre("deleteOne",async function(next){
     const student = await this.model.findOne(this.getQuery())
-    const Parent = require("./parent")
-    if (student.profile_pic){
-        removeFile(`${__dirname}/../public${student.profile_pic}`,(err)=>{
-            if (err){
-                console.log(err)
-            }else{
-                console.log("Successfully Deleted:",student.profile_pic)
-            }
-        })
+    await preDeleteStudent(student,next);
+    return next();
+})
+studentSchema.pre("deleteMany",async function (next){
+    const students = await this.model.find(this.getQuery())
+    for (const student of students) {
+        await preDeleteStudent(student,next);
     }
+    return next();
+})
+
+const preDeleteStudent = async (student,next) =>{
+    const Parent = require("./parent")
     try{
         await Parent.updateOne({students:student._id},{$pull:{students:student._id}})
     } catch (e) {
         return next(e);
     }
-    return next();
-})
-studentSchema.pre("deleteMany",async function (next){
-    const students = await this.model.find(this.getQuery())
-    const Parent = require("./parent")
-    for (const student of students) {
-        if (student.profile_pic){
-            removeFile(`${__dirname}/../public${student.profile_pic}`,(err)=>{
-                if (err){
-                    console.log(err)
-                }else{
-                    console.log("Successfully Deleted:",student.profile_pic)
-                }
-            })
-        }
-        try{
-            await Parent.updateOne({students:student._id},{$pull:{students:student._id}})
-        } catch (e) {
-            return next(e);
-        }
+    if (student.profile_pic){
+        removeFile(student.profile_pic)
     }
-    return next();
-})
+}
 module.exports = mongoose.model("Student", studentSchema);

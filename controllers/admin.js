@@ -27,7 +27,7 @@ exports.getAllAdmins = (req,res) => {
     Admin.find().select("-createdAt -updatedAt -salt -password -__v").exec((err,admins)=>{
         if (err || !admins) {
             console.log(err);
-            res.status(400).json({
+            return res.status(400).json({
                 error: "An error occurred while trying to find all admin from db " + err,
             });
         }else{
@@ -41,7 +41,7 @@ exports.createAdmin = (req,res) =>{
     admin.save((err, admin) => {
         if (err || !admin) {
             console.log(err);
-            res.status(400).json({
+            return res.status(400).json({
                 error: "Not able to save admin in DB",
             });
         } else {
@@ -50,7 +50,7 @@ exports.createAdmin = (req,res) =>{
             admin.updatedAt = undefined;
             admin.salt = undefined;
             admin.__v = undefined;
-            res.json({admin});
+            return res.json({admin});
         }
     });
 }
@@ -99,7 +99,7 @@ exports.deleteAdmin = (req, res) => {
                 error: "Failed to delete admin",
             });
         }
-        res.json({
+        return res.json({
             message: `${req.admin.name} Admin Deleted Successfully`,
         });
     });

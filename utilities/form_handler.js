@@ -8,7 +8,8 @@ exports.handleForm = (req, res,next) => {
     uploadDir: req.uploadDir,
     // filter: function ({ name, originalFilename, mimetype }) {
     //   // keep only images
-    //   req.isImage = mimetype && mimetype.includes("image");
+    //   req.isImage = mimetype
+    //   && mimetype.includes("image");
     //   return req.isImage;
     // },
     filename: function (name, ext, part, form) {

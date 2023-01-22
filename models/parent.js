@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
-const {unlink: removeFile} = require("fs");
+const {removeFile} = require("../utilities/remove_file");
 const { ObjectId } = mongoose.Schema;
 
 const Schema = mongoose.Schema;
@@ -90,31 +90,21 @@ parentSchema.methods = {
 
 parentSchema.pre("deleteOne", async function(next){
     const parent = await this.model.findOne(this.getQuery())
-    if (parent.profile_pic){
-        removeFile(`${__dirname}/../public${parent.profile_pic}`,(err)=>{
-            if (err){
-                console.log(err)
-            }else{
-                console.log("Successfully Deleted:",parent.profile_pic)
-            }
-        })
-    }
+    preDeleteParent(parent);
     return next();
 })
 parentSchema.pre("deleteMany", async function (next){
     const parents = await this.model.find(this.getQuery())
     parents.forEach((parent)=>{
-        if (parent.profile_pic){
-            removeFile(`${__dirname}/../public${parent.profile_pic}`,(err)=>{
-                if (err){
-                    console.log(err)
-                }else{
-                    console.log("Successfully Deleted:",parent.profile_pic)
-                }
-            })
-        }
+        preDeleteParent(parent);
     })
     return next();
 })
+
+const preDeleteParent = (parent,next)=>{
+    if (parent.profile_pic){
+        removeFile(parent.profile_pic);
+    }
+}
 
 module.exports = mongoose.model("Parent", parentSchema);

@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
+const {removeFile} = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
-
-const {unlink:removeFile} = require("fs")
 
 const lessonSchema = new Schema(
     {
@@ -43,45 +42,29 @@ lessonSchema.pre("save",async function(next){
 })
 
 lessonSchema.pre("deleteOne",async function(next){
-    const Subject = require("./subject")
     const lesson = await this.model.findOne(this.getQuery());
-    lesson.files.forEach((file)=>{
-        removeFile(`${__dirname}/../public${file}`,(err)=>{
-            if (err){
-                console.log(err)
-            }else{
-                console.log("Successfully Deleted:",file)
-            }
-        })
-    })
+    await preDeleteLesson(lesson,next);
+    return next()
+})
+
+lessonSchema.pre("deleteMany", async function(next){
+    const lessons = await this.model.find(this.getQuery());
+    for (const lesson of lessons) {
+        await preDeleteLesson(lesson,next);
+    }
+    return next();
+})
+
+const preDeleteLesson = async (lesson,next)=>{
+    const Subject = require("./subject")
     try{
         await Subject.updateOne({ _id: lesson.subject }, { $pull: { lessons: lesson._id } });
     } catch (e) {
         return next(e)
     }
-    return next()
-})
-
-lessonSchema.pre("deleteMany", async function(next){
-    const Subject = require("./subject")
-    const lessons = await this.model.find(this.getQuery());
-    for (const lesson of lessons) {
-        lesson.files.forEach((file)=>{
-            removeFile(`${__dirname}/../public${file}`,(err)=>{
-                if (err){
-                    console.log(err)
-                }else{
-                    console.log("Successfully Deleted:",file)
-                }
-            })
-        })
-        try{
-            await Subject.updateOne({ _id: lesson.subject }, { $pull: { lessons: lesson._id } });
-        } catch (e) {
-            next(e);
-        }
-        next();
-    }
-})
+    lesson.files.forEach((file)=>{
+        removeFile(file);
+    })
+}
 
 module.exports = mongoose.model("Lesson", lessonSchema);

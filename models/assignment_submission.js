@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
+const {removeFile} = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const {ObjectId} = mongoose.Schema;
-
-const {unlink: removeFile} = require("fs");
 
 const assignmentSubmissionSchema = new Schema({
         submission: {
@@ -36,18 +35,21 @@ assignmentSubmissionSchema.pre("save",async function(next){
     return next();
 })
 assignmentSubmissionSchema.pre("deleteOne",async function (next){
-    const Assignment = require("./assignment")
     const assignment_submission = await this.model.findOne(this.getQuery()).populate("assignment");
-    /// DELETE ASSIGNMENT SUBMISSION FILES IF EXISTS
-    assignment_submission.submission.forEach((submission)=>{
-        removeFile(`${__dirname}/../public${submission}`,(err)=>{
-            if (err){
-                console.log(err);
-            }else{
-                console.log("Successfully deleted:",submission)
-            }
-        })
-    })
+    await preDeleteAssignmentSubmission(assignment_submission,next);
+    return next()
+});
+
+assignmentSubmissionSchema.pre("deleteMany",async function(next){
+    const assignment_submissions = await this.model.find(this.getQuery())
+    for (const assignment_submission of assignment_submissions) {
+        await preDeleteAssignmentSubmission(assignment_submission,next);
+    }
+    return next();
+})
+
+const preDeleteAssignmentSubmission = async (assignment_submission,next) =>{
+    const Assignment = require("./assignment")
     /// REMOVING ASSIGNMENT SUBMISSION FROM ASSIGNMENT
     try{
         await Assignment.updateOne(
@@ -56,32 +58,10 @@ assignmentSubmissionSchema.pre("deleteOne",async function (next){
     }catch (e){
         return next(e);
     }
-    return next()
-});
-
-assignmentSubmissionSchema.pre("deleteMany",async function(next){
-    const Assignment = require("./assignment")
-    const assignment_submissions = await this.model.find(this.getQuery())
-    for (const assignment_submission of assignment_submissions) {
-        assignment_submission.submission.forEach((submission)=>{
-            removeFile(`${__dirname}/../public${submission}`,(err)=>{
-                if (err){
-                    console.log(err);
-                }else{
-                    console.log("Successfully deleted:",submission)
-                }
-            })
-        })
-        try{
-            await Assignment.updateOne(
-                { _id: assignment_submission.assignment },
-                { $pull: { submissions: assignment_submission._id } })
-        }catch (e){
-            console.log(e)
-            next(e);
-        }
-    }
-    return next();
-})
+    /// DELETE ASSIGNMENT SUBMISSION FILES IF EXISTS
+    assignment_submission.submission.forEach((submission_file)=>{
+        removeFile(submission_file);
+    })
+}
 
 module.exports = mongoose.model("AssignmentSubmission", assignmentSubmissionSchema);

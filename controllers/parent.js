@@ -1,11 +1,10 @@
 const Parent = require("../models/parent");
 const fs = require("fs");
-const {unlink: removeFile} = require("fs");
 const mongoose = require("mongoose");
 const Student = require("../models/student");
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setParentUploadDir = (req, res, next) => {
-  const fs = require('fs');
   const dir = `${__dirname}/../public/uploads/parents/`;
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, {recursive: true});
@@ -78,7 +77,10 @@ exports.createParent = (req, res) => {
     parent.save((err, parent) => {
       if (err || !parent) {
         console.log(err);
-        res.status(400).json({
+        if (req.body.profile_pic){
+          removeFile(req.body.profile_pic);
+        }
+        return res.status(400).json({
           error: "Not able to save parent in DB",
         });
       } else {
@@ -87,7 +89,7 @@ exports.createParent = (req, res) => {
         parent.updatedAt = undefined;
         parent.password = undefined;
         parent.salt = undefined;
-        res.json(parent);
+        return res.json(parent);
       }
     });
 };
@@ -96,13 +98,7 @@ exports.updateParent = (req, res) => {
   if (req?.file?.profile_pic) {
     /// HERE WE CHECK IF STUDENT HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
     if (req.parent.profile_pic){
-      removeFile(`${__dirname}/../public${req.parent.profile_pic}`,(err)=>{
-        if (err){
-          console.log(err);
-        }else{
-          console.log("Successfully Deleted:",req.parent.profile_pic);
-        }
-      })
+      removeFile(req.parent.profile_pic);
     }
       console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
       req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
@@ -155,7 +151,7 @@ exports.deleteParent = (req, res) => {
         error: "Failed to delete parent",
       });
     }
-    res.json({
+    return res.json({
       message: `${req.parent.name} Parent Deleted Successfully`,
     });
   });

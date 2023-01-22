@@ -5,8 +5,8 @@ const Student = require("../models/student");
 
 const { validationResult } = require("express-validator");
 
-var jwt = require("jsonwebtoken");
-var { expressjwt } = require("express-jwt");
+const jwt = require("jsonwebtoken");
+const {expressjwt} = require("express-jwt");
 
 exports.signout = (req, res) => {
   res.clearCookie("token");

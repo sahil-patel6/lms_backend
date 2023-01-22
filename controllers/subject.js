@@ -1,6 +1,6 @@
 const Subject = require("../models/subject");
 const Department = require("../models/department");
-const {unlink:removeFile} = require("fs")
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setSubjectUploadDir = (req, res, next)=>{
     const fs = require('fs');
@@ -49,7 +49,7 @@ exports.getAllSubjectsBySemester = (req, res) => {
       .exec((err, subjects) => {
       if (err || !subjects) {
         console.log(err);
-        res.status(400).json({
+        return res.status(400).json({
           error:
             "An error occurred while trying to find all subjects from db " +
             err,
@@ -87,14 +87,18 @@ exports.createSubject = (req, res,next) => {
     subject.save((err, subject) => {
       if (err || !subject) {
         console.log(err);
-        res.status(400).json({
+        /// REMOVING SUBJECT PIC URL IF IT EXISTS BECAUSE OF ERROR
+        if (req.body.pic_url){
+            removeFile(req.body.pic_url);
+        }
+        return res.status(400).json({
           error: "Not able to save subject in DB",
         });
       } else {
           subject.__v = undefined;
           subject.createdAt = undefined;
           subject.updatedAt = undefined;
-          res.json(subject);
+          return res.json(subject);
       }
     });
 }
@@ -103,13 +107,7 @@ exports.updateSubject = (req, res) => {
     if (req?.file?.pic_url){
         /// HERE WE CHECK IF SUBJECT HAS PIC_URL AND IF IT DOES THEN WE REMOVE PIC FROM FILE SYSTEM
         if (req.subject.pic_url){
-            removeFile(`${__dirname}/../public${req.subject.pic_url}`,(err)=>{
-                if (err){
-                    console.log(err);
-                }else{
-                    console.log("Successfully Deleted:",req.subject.pic_url);
-                }
-            })
+            removeFile(req.subject.pic_url);
         }
         console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
         req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
@@ -137,7 +135,7 @@ exports.deleteSubject = (req, res) => {
         error: "Failed to delete Subject",
       });
     }
-      res.json({
+      return res.json({
           message: `${req.subject.name} Subject Deleted Successfully`,
       });
   });

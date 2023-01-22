@@ -1,10 +1,10 @@
 const Teacher = require("../models/teacher");
 const Subject = require("../models/subject")
-const {unlink: removeFile} = require("fs");
+const fs = require('fs');
 const mongoose = require("mongoose")
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setTeacherUploadDir = (req, res, next) => {
-    const fs = require('fs');
     const dir = `${__dirname}/../public/uploads/teachers/`;
 
     if (!fs.existsSync(dir)) {
@@ -71,7 +71,10 @@ exports.createTeacher = (req, res) => {
     teacher.save((err, teacher) => {
         if (err || !teacher) {
             console.log(err);
-            res.status(400).json({
+            if (req.body.profile_pic){
+                removeFile(req.body.profile_pic);
+            }
+            return res.status(400).json({
                 error: "Not able to save teacher in DB",
             });
         } else {
@@ -80,7 +83,7 @@ exports.createTeacher = (req, res) => {
             teacher.updatedAt = undefined;
             teacher.password = undefined;
             teacher.salt = undefined;
-            res.json(teacher);
+            return res.json(teacher);
         }
     });
 }
@@ -89,13 +92,7 @@ exports.updateTeacher = (req, res) => {
     if (req?.file?.profile_pic) {
         /// HERE WE CHECK IF TEACHER HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
         if (req.teacher.profile_pic){
-            removeFile(`${__dirname}/../public${req.teacher.profile_pic}`,(err)=>{
-                if (err){
-                    console.log(err);
-                }else{
-                    console.log("Successfully Deleted:",req.teacher.profile_pic);
-                }
-            })
+            removeFile(req.teacher.profile_pic);
         }
         console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
         req.body.profile_pic = `/uploads/teachers/${req.file.profile_pic.newFilename}`;
@@ -148,7 +145,7 @@ exports.deleteTeacher = (req, res) => {
                 error: "Failed to delete Teacher",
             });
         }
-        res.json({
+        return res.json({
             message: `${req.teacher.name} Teacher Deleted Successfully`,
         });
     });

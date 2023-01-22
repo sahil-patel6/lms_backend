@@ -1,7 +1,6 @@
 const Student = require("../models/student");
-const Subject = require("../models/subject");
 const Department = require("../models/department");
-const {unlink: removeFile} = require("fs");
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setStudentUploadDir = (req, res, next) => {
   const fs = require('fs');
@@ -63,7 +62,7 @@ exports.getAllStudentsBySemester = (req, res) => {
       .exec((err, students) => {
         if (err || !students) {
           console.log(err);
-          res.status(400).json({
+          return res.status(400).json({
             error:
                 "An error occurred while trying to find all subjects from db " +
                 err,
@@ -79,14 +78,17 @@ exports.createStudent = (req, res) => {
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
     req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
   } else {
-    req.body.pic_url = "";
+    req.body.profile_pic = "";
   }
 
   const student = new Student(req.body);
     student.save((err, student) => {
       if (err || !student) {
         console.log(err);
-        res.status(400).json({
+        if (req.body.profile_pic){
+          removeFile(req.body.profile_pic);
+        }
+        return res.status(400).json({
           error: "Not able to save student in DB",
         });
       } else {
@@ -95,7 +97,7 @@ exports.createStudent = (req, res) => {
         student.updatedAt = undefined;
         student.password = undefined;
         student.salt = undefined;
-        res.json(student);
+        return res.json(student);
       }
     });
 };
@@ -104,13 +106,7 @@ exports.updateStudent = (req, res) => {
   if (req?.file?.profile_pic) {
     /// HERE WE CHECK IF STUDENT HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
     if (req.student.profile_pic){
-      removeFile(`${__dirname}/../public${req.student.profile_pic}`,(err)=>{
-        if (err){
-          console.log(err);
-        }else{
-          console.log("Successfully Deleted:",req.student.profile_pic);
-        }
-      })
+      removeFile(req.student.profile_pic);
     }
     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
     req.body.profile_pic = `/uploads/students/${req.file.profile_pic.newFilename}`;
@@ -163,7 +159,7 @@ exports.deleteStudent = (req, res) => {
         error: "Failed to delete student",
       });
     }
-    res.json({
+    return res.json({
       message: `${req.student.name} Student Deleted Successfully`,
     });
   });

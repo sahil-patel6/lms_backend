@@ -1,8 +1,7 @@
 const Lesson = require("../models/lesson");
 const Subject = require("../models/subject");
-const Teacher = require("../models/teacher")
 const fs = require("fs");
-const {unlink: removeFile} = require("fs");
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setLessonUploadDir = (req, res, next)=>{
     const dir = `${__dirname}/../public/uploads/lessons/`;
@@ -50,7 +49,7 @@ exports.getAllLessonsBySubject = (req, res) => {
         .exec((err, lessons) => {
             if (err || !lessons) {
                 console.log(err);
-                res.status(400).json({
+                return res.status(400).json({
                     error:
                         "An error occurred while trying to find all lessons from db " +
                         err,
@@ -91,14 +90,18 @@ exports.createLesson = (req, res,next) => {
     lesson.save((err, lesson) => {
         if (err || !lesson) {
             console.log(err);
-            res.status(400).json({
+            /// REMOVING FILES IF IT EXISTS BECAUSE OF ERROR
+            req.body.files.forEach(file=>{
+                removeFile(file);
+            })
+            return res.status(400).json({
                 error: "Not able to save lesson in DB",
             });
         } else {
             lesson.__v = undefined;
             lesson.createdAt = undefined;
             lesson.updatedAt = undefined;
-            res.json(lesson);
+            return res.json(lesson);
         }
     });
 }
@@ -108,13 +111,7 @@ exports.updateLesson = (req, res) => {
         /// HERE WE CHECK IF LESSON HAS FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
         if (req.lesson.files){
             req.lesson.files.forEach(file=>{
-                removeFile(`${__dirname}/../public${file}`,(err)=>{
-                    if (err){
-                        console.log(err);
-                    }else{
-                        console.log("Successfully Deleted:",file);
-                    }
-                })
+                removeFile(file)
             })
         }
         req.body.files = []
@@ -147,7 +144,7 @@ exports.deleteLesson = (req, res) => {
                 error: "Failed to delete Lesson",
             });
         }
-        res.json({
+        return res.json({
             message: `${req.lesson.title} Lesson Deleted Successfully`,
         });
     });

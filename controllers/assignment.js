@@ -1,8 +1,7 @@
 const Assignment = require("../models/assignment");
 const fs = require('fs');
 const Subject = require("../models/subject");
-const Teacher = require("../models/teacher");
-const {unlink: removeFile} = require("fs");
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setAssignmentUploadDir = (req, res, next)=>{
     const dir = `${__dirname}/../public/uploads/assignments/`;
@@ -54,7 +53,7 @@ exports.getAllAssignmentsBySubject = (req, res) => {
         .exec((err, assignments) => {
             if (err || !assignments) {
                 console.log(err);
-                res.status(400).json({
+                return res.status(400).json({
                     error:
                         "An error occurred while trying to find all assignments from db " +
                         err,
@@ -99,14 +98,18 @@ exports.createAssignment = (req, res,next) => {
     assignment.save((err, assignment) => {
         if (err || !assignment) {
             console.log(err);
-            res.status(400).json({
+            /// REMOVING ASSIGNMENT QUESTION FILES IF IT EXISTED BECAUSE OF ERROR
+            req.body.assignment_question_files.forEach((question)=>{
+                removeFile(question);
+            })
+            return res.status(400).json({
                 error: "Not able to save assignment in DB",
             });
         } else {
             assignment.__v = undefined;
             assignment.createdAt = undefined;
             assignment.updatedAt = undefined;
-            res.json(assignment);
+            return res.json(assignment);
         }
     });
 }
@@ -117,13 +120,7 @@ exports.updateAssignment = (req, res) => {
         /// HERE WE CHECK IF ASSIGNMENT HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
         if (req.assignment.assignment_question_files){
             req.assignment.assignment_question_files.forEach(assignment_question_file=>{
-                removeFile(`${__dirname}/../public${assignment_question_file}`,(err)=>{
-                    if (err){
-                        console.log(err);
-                    }else{
-                        console.log("Successfully Deleted:",assignment_question_file);
-                    }
-                })
+                removeFile(assignment_question_file);
             })
         }
         if(Array.isArray(req.file.assignment_question_files)){
@@ -161,7 +158,7 @@ exports.deleteAssignment = (req, res) => {
                 error: "Failed to delete Assignment",
             });
         }
-        res.json({
+        return res.json({
             message: `${req.assignment.title} Assignment Deleted Successfully`,
         })
     });

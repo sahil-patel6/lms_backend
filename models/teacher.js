@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require('uuid');
-const {unlink: removeFile} = require("fs");
-const Semester = require("./semester");
-const Subject = require("./subject");
+const {removeFile} = require("../utilities/remove_file");
 const { ObjectId } = mongoose.Schema;
 
 const Schema = mongoose.Schema;
@@ -104,6 +102,18 @@ teacherSchema.pre("save",async function(next){
 
 teacherSchema.pre("deleteOne", async function(next){
     const teacher = await this.model.findOne(this.getQuery())
+    await preDeleteTeacher(teacher,next);
+    return next();
+})
+teacherSchema.pre("deleteMany",async function (next){
+    const teachers = await this.model.find(this.getQuery())
+    for (const teacher of teachers) {
+        await preDeleteTeacher(teacher,next);
+    }
+    return next();
+})
+
+const preDeleteTeacher = async (teacher,next) =>{
     const Subject = require("./subject")
     try{
         for (const subject of teacher.subjects){
@@ -113,37 +123,7 @@ teacherSchema.pre("deleteOne", async function(next){
         return next(e);
     }
     if (teacher.profile_pic){
-        removeFile(`${__dirname}/../public${teacher.profile_pic}`,(err)=>{
-            if (err){
-                console.log(err)
-            }else{
-                console.log("Successfully Deleted:",teacher.profile_pic)
-            }
-        })
+        removeFile(teacher.profile_pic)
     }
-    return next();
-})
-teacherSchema.pre("deleteMany",async function (next){
-    const teachers = await this.model.find(this.getQuery())
-    const Subject = require("./subject")
-    for (const teacher of teachers) {
-        try{
-            for (const subject of teacher.subjects){
-                await Subject.updateOne({_id:subject},{teacher: null});
-            }
-        }catch (e) {
-            next(e);
-        }
-        if (teacher.profile_pic){
-            removeFile(`${__dirname}/../public${teacher.profile_pic}`,(err)=>{
-                if (err){
-                    console.log(err)
-                }else{
-                    console.log("Successfully Deleted:",teacher.profile_pic)
-                }
-            })
-        }
-    }
-    return next();
-})
+}
 module.exports = mongoose.model("Teacher", teacherSchema);

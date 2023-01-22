@@ -39,31 +39,27 @@ semesterSchema.pre("save", async function(next){
 });
 
 semesterSchema.pre("deleteOne",async function(next){
-    const Department = require("./department")
-    const Subject = require("./subject")
     const semester = await this.model.findOne(this.getQuery());
-    try {
-        await Subject.deleteMany({semester:semester._id});
-        await Department.updateOne({_id:semester.department},{$pull: {semesters:semester._id}})
-
-    } catch (e) {
-        return next(e);
-    }
+    await preDeleteSemester(semester,next);
     return next()
 })
 semesterSchema.pre("deleteMany", async function(next){
-    const Department = require("./department")
-    const Subject = require("./subject")
     const semesters = await this.model.find(this.getQuery());
     for (const semester of semesters) {
-        try{
-            await Subject.deleteMany({semester:semester._id});
-            await Department.updateOne({_id:semester.department},{$pull: {semesters:semester._id}})
-        } catch (e){
-            return next(e)
-        }
+        await preDeleteSemester(semester,next);
     }
     return next();
 })
+
+const preDeleteSemester = async (semester,next)=>{
+    const Department = require("./department")
+    const Subject = require("./subject")
+    try {
+        await Subject.deleteMany({semester:semester._id});
+        await Department.updateOne({_id:semester.department},{$pull: {semesters:semester._id}})
+    } catch (e) {
+        return next(e);
+    }
+}
 
 module.exports = mongoose.model("Semester", semesterSchema);

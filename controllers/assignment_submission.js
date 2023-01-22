@@ -1,8 +1,7 @@
 const AssignmentSubmission = require("../models/assignment_submission");
 const fs = require("fs");
-const {unlink: removeFile} = require("fs");
 const Assignment = require("../models/assignment");
-const Student = require("../models/student")
+const {removeFile} = require("../utilities/remove_file");
 
 exports.setAssignmentSubmissionUploadDir = (req, res, next)=>{
     const dir = `${__dirname}/../public/uploads/assignment_submissions/`;
@@ -53,7 +52,7 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
         .exec((err, assignment_submissions) => {
             if (err || !assignment_submissions) {
                 console.log(err);
-                res.status(400).json({
+                return res.status(400).json({
                     error:
                         "An error occurred while trying to find all assignment_submissions from db " +
                         err,
@@ -98,6 +97,9 @@ exports.createAssignmentSubmission = (req, res,next) => {
     }
     AssignmentSubmission.findOne({assignment:req.body.assignment,student:req.body.student},(err,assignmentsubmission)=>{
         if(assignmentsubmission){
+            req.body.submission.forEach(submission=>{
+                removeFile(submission);
+            })
             return res.status(400).json({
                 error: "You have already submitted the assignment so please try to update it."
             })
@@ -107,6 +109,9 @@ exports.createAssignmentSubmission = (req, res,next) => {
             assignment_submission.save((err, assignment_submission) => {
                 if (err || !assignment_submission) {
                     console.log(err);
+                    req.body.submission.forEach(submission=>{
+                        removeFile(submission);
+                    })
                     return res.status(400).json({
                         error: "Not able to save assignment_submission in DB",
                     });
@@ -118,6 +123,9 @@ exports.createAssignmentSubmission = (req, res,next) => {
                 }
             });
         }else{
+            req.body.submission.forEach(submission=>{
+                removeFile(submission);
+            })
             console.log(err);
             return res.status(400).json({
                 error: "Something went wrong"
@@ -132,13 +140,7 @@ exports.updateAssignmentSubmission = (req, res) => {
         /// HERE WE CHECK IF ASSIGNMENT SUBMISSIONS HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
         if (req.assignment_submission.submission){
             req.assignment_submission.submission.forEach(assignment_question_file=>{
-                removeFile(`${__dirname}/../public${assignment_question_file}`,(err)=>{
-                    if (err){
-                        console.log(err);
-                    }else{
-                        console.log("Successfully Deleted:",assignment_question_file);
-                    }
-                })
+                removeFile(assignment_question_file);
             })
         }
         if(Array.isArray(req.file.submission)){
@@ -179,7 +181,7 @@ exports.deleteAssignmentSubmission = (req, res) => {
                 error: "Failed to delete Assignment Submission",
             });
         }
-        res.json({
+        return res.json({
             message: `${req.assignment_submission.student.name} Assignment Submission Deleted Successfully`,
         });
     });

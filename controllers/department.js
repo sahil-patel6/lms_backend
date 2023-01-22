@@ -49,7 +49,7 @@ exports.getAllDepartments = (req,res) => {
         .exec((err,departments)=>{
         if (err || !departments) {
             console.log(err);
-            res.status(400).json({
+            return res.status(400).json({
                 error: "An error occurred while trying to find all department from db " + err,
             });
         }else{
@@ -63,14 +63,14 @@ exports.createDepartment = (req,res) => {
     department.save((err, department) => {
         if (err || !department) {
             console.log(err);
-            res.status(400).json({
+            return res.status(400).json({
                 error: "Not able to save department in DB",
             });
         } else {
             department.__v = undefined;
             department.createdAt = undefined;
             department.updatedAt = undefined;
-            res.json(department);
+            return res.json(department);
         }
     });
 }
@@ -99,7 +99,7 @@ exports.deleteDepartment = (req, res) => {
                 error: "Failed to delete Department",
             });
         }
-        res.json({
+        return res.json({
             message: `${req.department.name} Department Deleted Successfully`,
         });
     });

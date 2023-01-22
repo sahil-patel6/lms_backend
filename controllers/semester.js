@@ -61,7 +61,7 @@ exports.getAllSemestersByDepartment = (req,res) => {
       .exec((err,semesters)=>{
       if (err || !semesters) {
           console.log(err);
-          res.status(400).json({
+          return res.status(400).json({
               error: "An error occurred while trying to find all semesters from db " + err,
           });
       }else{
@@ -75,14 +75,14 @@ exports.createSemester = (req, res) => {
   semester.save((err, semester) => {
     if (err || !semester) {
       console.log(err);
-      res.status(400).json({
+      return res.status(400).json({
         error: "Not able to save semester in DB",
       });
     } else {
       semester.createdAt = undefined;
       semester.updatedAt = undefined;
       semester.__v = undefined;
-      res.json(semester);
+      return res.json(semester);
     }
   });
 };
@@ -107,12 +107,13 @@ exports.updateSemester = (req, res) => {
 exports.deleteSemester = (req, res) => {
   Semester.deleteOne({ _id: req.semester._id }, (err, removedSemester) => {
     if (err || removedSemester.deletedCount === 0) {
+      console.log(err)
       return res.status(400).json({
         error: "Failed to delete Semester",
       });
     }
     return res.json({
-        message: `${req.semester.name} Semester From ${req.semester.department} Deleted Successfully`,
+        message: `${req.semester.name} Semester From ${req.semester.department.name} Deleted Successfully`,
     });
   });
 };
