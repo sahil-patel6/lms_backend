@@ -20,11 +20,11 @@ const subjectSchema = new Schema(
       type: Number,
       required: true,
     },
-    lessons: {
+    resources: {
       type: [
         {
           type: ObjectId,
-          ref: "Lesson",
+          ref: "Resource",
         },
       ],
       default: [],
@@ -83,14 +83,14 @@ subjectSchema.pre("deleteMany", async function(next){
 
 const preDeleteSubject = async (subject,next)=>{
     const Semester = require("./semester")
-    const Lesson = require("./lesson")
+    const Resource = require("./resource")
     const Assignment = require("./assignment")
     const Teacher = require("./teacher")
     try{
         /// UPDATING SEMESTER BY REMOVING THE SUBJECT FROM ITS SUBJECTS LIST
         await Semester.updateOne({ _id: subject.semester },{ $pull: { subjects: subject._id } });
-        /// REMOVING ALL LESSONS FROM THIS SUBJECT
-        await Lesson.deleteMany({subject:subject._id})
+        /// REMOVING ALL RESOURCES FROM THIS SUBJECT
+        await Resource.deleteMany({subject:subject._id})
         /// REMOVING ALL ASSIGNMENT FROM THIS SUBJECT
         await Assignment.deleteMany({subject:subject._id});
         /// REMOVING SUBJECT FROM TEACHER

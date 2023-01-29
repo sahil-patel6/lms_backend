@@ -15,7 +15,7 @@ exports.setSubjectUploadDir = (req, res, next)=>{
 
 exports.getSubjectById = (req, res, next, id) => {
   Subject.findById(id)
-      .populate("lessons","-__v -createdAt -updatedAt -subject")
+      .populate("resources","-__v -createdAt -updatedAt -subject")
       .populate("assignments","-__v -createdAt -updatedAt -submissions -subject")
       .populate("semester","_id name")
       .populate("department", "_id name")
@@ -40,7 +40,7 @@ exports.getSubject = (req, res) => {
 
 exports.getAllSubjectsBySemester = (req, res) => {
   Subject.find({ semester: req.params.semesterId })
-      .populate("lessons","-__v -createdAt -updatedAt -subject")
+      .populate("resources","-__v -createdAt -updatedAt -subject")
       .populate("assignments","-__v -createdAt -updatedAt -submissions -subject")
       .populate("semester","_id name")
       .populate("department", "_id name")

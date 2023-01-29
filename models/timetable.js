@@ -22,4 +22,22 @@ const timetableSchema = new Schema(
     { timestamps: true }
 );
 
+timetableSchema.pre("deleteOne", async function(next){
+    const timetable = await this.model.findOne(this.getQuery())
+    await preDeleteTimetable(timetable,next);
+    return next();
+})
+timetableSchema.pre("deleteMany",async function (next){
+    const timetables = await this.model.find(this.getQuery())
+    for (const timetable of timetables) {
+        await preDeleteTimetable(timetable,next);
+    }
+    return next();
+})
+
+const preDeleteTimetable = async (timetable,next) =>{
+    if (timetable.timetable){
+        removeFile(timetable.timetable)
+    }
+}
 module.exports = mongoose.model("TimeTable", timetableSchema);

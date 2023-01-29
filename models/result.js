@@ -8,18 +8,8 @@ const resultSchema = new Schema(
             type:String,
             required: true,
         },
-        date: {
-            type: Date,
-            required: true,
-            default: Date.now()
-        },
         result: {
             type:String,
-            required: true,
-        },
-        student: {
-            type: ObjectId,
-            ref: "Student",
             required: true,
         },
         department: {
@@ -35,5 +25,25 @@ const resultSchema = new Schema(
     },
     { timestamps: true }
 );
+
+
+resultSchema.pre("deleteOne", async function(next){
+    const result = await this.model.findOne(this.getQuery())
+    await preDeleteResult(result,next);
+    return next();
+})
+resultSchema.pre("deleteMany",async function (next){
+    const results = await this.model.find(this.getQuery())
+    for (const result of results) {
+        await preDeleteResult(result,next);
+    }
+    return next();
+})
+
+const preDeleteResult = async (result,next) =>{
+    if (result.result){
+        removeFile(result.result)
+    }
+}
 
 module.exports = mongoose.model("Result", resultSchema);

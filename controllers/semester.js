@@ -6,7 +6,7 @@ exports.getSemesterById = (req, res, next, id) => {
     .populate({
       path: "subjects",
       select: "-__v -createdAt -updatedAt",
-    //   populate: { path: "lessons", select: "-__v" },
+    //   populate: { path: "resources", select: "-__v" },
     })
     .populate(
       {
@@ -51,7 +51,7 @@ exports.getAllSemestersByDepartment = (req,res) => {
   Semester.find({department:req.params.departmentId}).populate({
     path: "subjects",
     select: "-__v -createdAt -updatedAt",
-  //   populate: { path: "lessons", select: "-__v" },
+  //   populate: { path: "resources", select: "-__v" },
   })
   .populate({
       path:"department",

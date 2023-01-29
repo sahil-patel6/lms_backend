@@ -8,7 +8,7 @@ exports.getDepartmentById = (req, res, next, id) => {
                     path:"subjects",
                     select:"-__v -createdAt -updatedAt -semester -department",
                     populate: {
-                        path: "lessons",
+                        path: "resources",
                         select: "-__v -createdAt -updatedAt"
                     }
                 },
@@ -40,7 +40,7 @@ exports.getAllDepartments = (req,res) => {
                 path:"subjects",
                 select:"-__v -createdAt -updatedAt -semester -department",
                 populate: {
-                    path: "lessons assignments",
+                    path: "resources assignments",
                     select: "-__v -createdAt -updatedAt"
                 }
             },

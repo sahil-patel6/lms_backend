@@ -40,24 +40,28 @@ exports.getTeacher = (req, res) => {
 };
 
 exports.checkIfSubjectsExists = (req,res,next) =>{
-    try{
-        req.body.subjects.map(subject=>{
-            return new mongoose.mongo.ObjectId(subject)
-        })
-    } catch (e){
-        console.log(e);
-        return res.status(400).json({
-            error: "An error occurred while processing subjects"
-        })
-    }
-    Subject.find({_id:{$in:req.body.subjects}},(err,subjects)=>{
-        if (err || !subjects || subjects.length !== req.body.subjects.length){
+    if (req.body.subjects){
+        try{
+            req.body.subjects.map(subject=>{
+                return new mongoose.mongo.ObjectId(subject)
+            })
+        } catch (e){
+            console.log(e);
             return res.status(400).json({
-                error: "Subjects not found"
+                error: "An error occurred while processing subjects"
             })
         }
+        Subject.find({_id:{$in:req.body.subjects}},(err,subjects)=>{
+            if (err || !subjects || subjects.length !== req.body.subjects.length){
+                return res.status(400).json({
+                    error: "Subjects not found"
+                })
+            }
+            return next();
+        })
+    }else{
         next();
-    })
+    }
 }
 
 exports.createTeacher = (req, res) => {

@@ -60,8 +60,8 @@ router.get("/teacher/:teacherId/student/:studentId", isSignedIn,isAuthenticated,
 router.get("/teacher/:teacherId/parent/:parentId",isSignedIn,isAuthenticated,isParent, getTeacher);
 
 /// UPDATE TEACHER CAN ONLY BE DONE EITHER BY ADMIN OR TEACHER HIMSELF
-router.put("/teacher/:teacherId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, setTeacherUploadDir, handleForm, updateTeacher);
-router.put("/teacher/:teacherId/", isSignedIn, isAuthenticated, isTeacher, setTeacherUploadDir, handleForm, updateTeacher);
+router.put("/teacher/:teacherId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, setTeacherUploadDir, handleForm, checkIfSubjectsExists, updateTeacher);
+router.put("/teacher/:teacherId/", isSignedIn, isAuthenticated, isTeacher, setTeacherUploadDir, handleForm,checkIfSubjectsExists, updateTeacher);
 
 /// DELETE TEACHER CAN  ONLY BE DONE BY ADMIN
 router.delete("/teacher/:teacherId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, deleteTeacher)

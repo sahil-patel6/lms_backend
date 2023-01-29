@@ -74,7 +74,7 @@ exports.checkIfSubjectAndTeacherExistsAndAreValid = (req,res,next) =>{
         console.log(req.teacher._id,subject.teacher);
         if (req.teacher._id.toString() !== subject.teacher._id.toString()){
             return res.status(400).json({
-                error: "Forbidden to create lesson"
+                error: "Forbidden to create resource"
             })
         }
         next();

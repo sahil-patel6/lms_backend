@@ -97,6 +97,7 @@ exports.createAssignmentSubmission = (req, res,next) => {
     }
     AssignmentSubmission.findOne({assignment:req.body.assignment,student:req.body.student},(err,assignmentsubmission)=>{
         if(assignmentsubmission){
+            /// IF IT ALREADY EXISTS THEN THE UPLOADED SUBMISSION SHOULD BE DELETED
             req.body.submission.forEach(submission=>{
                 removeFile(submission);
             })
@@ -123,6 +124,7 @@ exports.createAssignmentSubmission = (req, res,next) => {
                 }
             });
         }else{
+            /// IF AN ERROR OCCURS THEN THE UPLOADED SUBMISSION SHOULD BE DELETED
             req.body.submission.forEach(submission=>{
                 removeFile(submission);
             })
