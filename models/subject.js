@@ -86,6 +86,7 @@ const preDeleteSubject = async (subject,next)=>{
     const Resource = require("./resource")
     const Assignment = require("./assignment")
     const Teacher = require("./teacher")
+    const Attendace = require("./attendance")
     try{
         /// UPDATING SEMESTER BY REMOVING THE SUBJECT FROM ITS SUBJECTS LIST
         await Semester.updateOne({ _id: subject.semester },{ $pull: { subjects: subject._id } });
@@ -95,6 +96,8 @@ const preDeleteSubject = async (subject,next)=>{
         await Assignment.deleteMany({subject:subject._id});
         /// REMOVING SUBJECT FROM TEACHER
         await Teacher.updateOne({subject:subject._id},{$pull:{subjects:subject._id}})
+        /// REMOVING ALL ATTENDANCE RELATED TO SUBJECT
+        await Attendace.deleteMany({subject:subject._id});
     } catch (e){
         return next(e);
     }

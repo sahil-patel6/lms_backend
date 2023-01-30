@@ -20,6 +20,7 @@ const assignmentRoutes = require("./routes/assignment");
 const assignmentSubmissionRoutes = require("./routes/assignment_submission");
 const timetableRoutes = require("./routes/timetable");
 const resultRoutes = require("./routes/result");
+const attendanceRoutes = require("./routes/attendance");
 const testRoutes = require("./routes/test");
 
 mongoose
@@ -50,6 +51,7 @@ app.use("/api/v1/",assignmentRoutes)
 app.use("/api/v1/",assignmentSubmissionRoutes)
 app.use("/api/v1/",timetableRoutes)
 app.use("/api/v1/",resultRoutes)
+app.use("/api/v1/",attendanceRoutes)
 app.use("/api/v1/", testRoutes);
 
 const port = process.env.PORT || 8000;

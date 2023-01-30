@@ -19,6 +19,10 @@ const attendanceSchema = new Schema(
             ref: "Subject",
             required: true,
         },
+        present: {
+            type: Boolean,
+            required: true
+        }
     },
     { timestamps: true }
 );

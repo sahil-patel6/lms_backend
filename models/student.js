@@ -112,8 +112,12 @@ studentSchema.pre("deleteMany",async function (next){
 
 const preDeleteStudent = async (student,next) =>{
     const Parent = require("./parent")
+    const Attendance = require("./attendance")
     try{
+        /// REMOVING STUDENT FROM PARENT'S STUDENT LIST
         await Parent.updateOne({students:student._id},{$pull:{students:student._id}})
+        /// REMOVING STUDENT'S ATTENDANCE
+        await Attendance.deleteMany({student:student._id});
     } catch (e) {
         return next(e);
     }
