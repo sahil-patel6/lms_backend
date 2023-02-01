@@ -10,12 +10,13 @@ const {
     getStudentById,
     getStudent,
     getAllStudentsBySemester,
-    checkIfDepartmentAndSemesterExists,
     createStudent,
     updateStudent,
     deleteStudent,
     setStudentUploadDir
 } = require("../controllers/student");
+
+const {checkIfDepartmentAndSemesterExists} = require("../utilities/middlewares");
 
 const { isSignedIn, isAuthenticated, isAdmin, isStudent, isTeacher, isParent} = require("../controllers/auth");
 const {handleForm} = require("../utilities/form_handler");

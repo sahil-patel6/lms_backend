@@ -5,12 +5,13 @@ const router = express.Router();
 const {
     getTeacherById,
     getTeacher,
-    checkIfSubjectsExists,
     updateTeacher,
     createTeacher,
     deleteTeacher,
     setTeacherUploadDir
 } = require("../controllers/teacher");
+
+const {checkIfSubjectsExists} = require("../utilities/middlewares")
 
 const {isSignedIn, isAuthenticated, isAdmin, isTeacher, isParent, isStudent} = require("../controllers/auth");
 const {getAdminById} = require("../controllers/admin");

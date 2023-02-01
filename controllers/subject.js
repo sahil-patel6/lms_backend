@@ -60,22 +60,6 @@ exports.getAllSubjectsBySemester = (req, res) => {
     });
 };
 
-exports.checkIfDepartmentAndSemesterExists = (req,res,next) =>{
-    Department.findById(req.body.department,(err,department)=>{
-        if (err || !department){
-            return res.status(400).json({
-                error: "No department found"
-            })
-        }
-        if (!department.semesters.find(semester=>semester==req.body.semester)){
-            return res.status(400).json({
-                error: "No Semester found"
-            })
-        }
-        next();
-    })
-}
-
 exports.createSubject = (req, res,next) => {
     if (req?.file?.pic_url){
       console.log(req.file.pic_url.filepath, req.file.pic_url.newFilename);

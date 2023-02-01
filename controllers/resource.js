@@ -60,23 +60,6 @@ exports.getAllResourcesBySubject = (req, res) => {
         });
 };
 
-exports.checkIfSubjectAndTeacherExistsAndAreValid = (req,res,next) =>{
-    Subject.findById(req.body.subject,(err,subject)=>{
-        if (err || !subject || !subject?.teacher){
-            return res.status(400).json({
-                error: "No Subject Found"
-            })
-        }
-        console.log(req.teacher._id,subject.teacher);
-        if (req.teacher._id.toString() !== subject.teacher._id.toString()){
-            return res.status(400).json({
-                error: "Forbidden to create resource"
-            })
-        }
-        next();
-    })
-}
-
 exports.createResource = (req, res,next) => {
     if (req?.file?.files){
         req.body.files = []

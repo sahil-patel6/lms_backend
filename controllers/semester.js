@@ -26,20 +26,6 @@ exports.getSemesterById = (req, res, next, id) => {
     });
 };
 
-exports.checkIfDepartmentExists = (req,res,next)=>{
-    Department.findById(req.body.department,(err,department)=>{
-        if (err || !department){
-            console.log(err);
-            return res.status(400).json({
-                error: "No Department found",
-            })
-        }else{
-            req.department = department._doc;
-            return next();
-        }
-    })
-}
-
 exports.getSemester = (req, res) => {
   req.semester.createdAt = undefined;
   req.semester.updatedAt = undefined;

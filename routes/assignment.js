@@ -6,12 +6,13 @@ const {
     getAssignmentById,
     getAssignment,
     getAllAssignmentsBySubject,
-    checkIfSubjectAndTeacherExistsAndAreValid,
     updateAssignment,
     createAssignment,
     deleteAssignment,
     setAssignmentUploadDir,
 } = require("../controllers/assignment");
+
+const {checkIfSubjectAndTeacherExistsAndAreValid} = require("../utilities/middlewares");
 
 const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const {getAdminById} =  require("../controllers/admin");

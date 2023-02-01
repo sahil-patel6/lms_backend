@@ -6,12 +6,13 @@ const {
   getResultById,
   getResult,
   getResultBySemester,
-  checkIfDepartmentAndSemesterExists,
   updateResult,
   createResult,
   deleteResult,
   setResultUploadDir,
 } = require("../controllers/result");
+
+const {checkIfDepartmentAndSemesterExists} = require("../utilities/middlewares")
 
 const { isSignedIn, isAuthenticated, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const {validateAllErrors} = require("../utilities/error")

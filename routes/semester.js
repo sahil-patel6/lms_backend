@@ -5,11 +5,12 @@ const {
   getSemesterById,
   getSemester,
   getAllSemestersByDepartment,
-  checkIfDepartmentExists,
   updateSemester,
   createSemester,
   deleteSemester,
 } = require("../controllers/semester");
+
+const {checkIfDepartmentExists} = require("../utilities/middlewares")
 
 const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const { getAdminById } = require("../controllers/admin");

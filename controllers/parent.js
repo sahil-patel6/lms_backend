@@ -36,36 +36,6 @@ exports.getParent = (req, res) => {
   return res.json(req.parent);
 };
 
-
-exports.checkIfStudentsExists = (req,res,next) =>{
-  try{
-    req.body.students.map(student=>{
-      return new mongoose.mongo.ObjectId(student)
-    })
-  } catch (e){
-    console.log(e);
-    return res.status(400).json({
-      error: "An error occurred while processing subjects"
-    })
-  }
-  Parent.find({students:{$in:req.body.students}},(err,parents)=>{
-    if (err || !parents || parents.length !== 0){
-      return res.status(400).json({
-        error: "Students already have parents"
-      })
-    }
-    console.log(parents);
-    Student.find({_id:{$in:req.body.students}},(err,students)=>{
-      if (err || !students || students.length !== req.body.students.length){
-        return res.status(400).json({
-          error: "Students not found"
-        })
-      }
-      next();
-    })
-  })
-}
-
 exports.createParent = (req, res) => {
     if (req?.file?.profile_pic) {
       console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);

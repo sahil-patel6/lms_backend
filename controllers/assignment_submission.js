@@ -63,25 +63,6 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
         });
 };
 
-exports.checkIfAssignmentAndStudentExistsAndAreValid = (req,res,next) =>{
-    Assignment.findById(req.body.assignment)
-        .populate("subject")
-        .exec((err,assignment)=>{
-        if (err || !assignment){
-            return res.status(400).json({
-                error: "No Assignment Found"
-            })
-        }
-        console.log(req.student.semester,assignment.subject.semester)
-        if (req.student.semester.toString() !== assignment.subject.semester.toString()){
-            return res.status(400).json({
-                error: "Forbidden to create assignment submission"
-            })
-        }
-        next();
-    })
-}
-
 exports.createAssignmentSubmission = (req, res,next) => {
     if (req?.file?.submission){
         req.body.submission = []

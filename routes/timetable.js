@@ -6,12 +6,13 @@ const {
   getTimetableById,
   getTimetable,
   getTimetableBySemester,
-  checkIfDepartmentAndSemesterExists,
   updateTimetable,
   createTimetable,
   deleteTimetable,
   setTimetableUploadDir,
 } = require("../controllers/timetable");
+
+const {checkIfDepartmentAndSemesterExists} =require("../utilities/middlewares")
 
 const { isSignedIn, isAuthenticated, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const {validateAllErrors} = require("../utilities/error")

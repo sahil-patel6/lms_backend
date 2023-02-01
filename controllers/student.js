@@ -36,22 +36,6 @@ exports.getStudent = (req, res) => {
   return res.json(req.student);
 };
 
-exports.checkIfDepartmentAndSemesterExists = (req,res,next) =>{
-  Department.findById(req.body.department,(err,department)=>{
-    if (err || !department){
-      return res.status(400).json({
-        error: "No department found"
-      })
-    }
-    if (!department.semesters.find(semester=>semester==req.body.semester)){
-      return res.status(400).json({
-        error: "No Semester found"
-      })
-    }
-    next();
-  })
-}
-
 exports.getAllStudentsBySemester = (req, res) => {
   Student.find({ semester: req.params.semesterId })
       // .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })

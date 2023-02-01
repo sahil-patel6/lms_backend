@@ -9,12 +9,13 @@ const {
 const {
     getParentById,
     getParent,
-    checkIfStudentsExists,
     createParent,
     updateParent,
     deleteParent,
     setParentUploadDir
 } = require("../controllers/parent");
+
+const {checkIfStudentsExists} = require("../utilities/middlewares")
 
 const { isSignedIn, isAuthenticated, isAdmin, isParent, isTeacher} = require("../controllers/auth");
 const {handleForm} = require("../utilities/form_handler");
