@@ -1,3 +1,6 @@
+const Department = require("../models/department")
+const Parent = require("../models/parent")
+const Student = require("../models/student")
 const Assignment = require("../models/assignment");
 const Subject = require("../models/subject");
 

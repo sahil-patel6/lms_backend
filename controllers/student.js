@@ -1,6 +1,7 @@
 const Student = require("../models/student");
 const Department = require("../models/department");
 const {removeFile} = require("../utilities/remove_file");
+const agenda = require("../agenda");
 
 exports.setStudentUploadDir = (req, res, next) => {
   const fs = require('fs');
@@ -76,6 +77,7 @@ exports.createStudent = (req, res) => {
           error: "Not able to save student in DB",
         });
       } else {
+        agenda.now("send user credentials email",{name:student.name,email:student.email,password:req.body.plainPassword})
         student.__v = undefined;
         student.createdAt = undefined;
         student.updatedAt = undefined;

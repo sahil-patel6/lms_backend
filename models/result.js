@@ -29,7 +29,9 @@ const resultSchema = new Schema(
 
 resultSchema.pre("deleteOne", async function(next){
     const result = await this.model.findOne(this.getQuery())
-    await preDeleteResult(result,next);
+    if (result){
+        await preDeleteResult(result,next);
+    }
     return next();
 })
 resultSchema.pre("deleteMany",async function (next){

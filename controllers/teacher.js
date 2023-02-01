@@ -3,6 +3,7 @@ const Subject = require("../models/subject")
 const fs = require('fs');
 const mongoose = require("mongoose")
 const {removeFile} = require("../utilities/remove_file");
+const agenda = require("../agenda");
 
 exports.setTeacherUploadDir = (req, res, next) => {
     const dir = `${__dirname}/../public/uploads/teachers/`;
@@ -57,6 +58,7 @@ exports.createTeacher = (req, res) => {
                 error: "Not able to save teacher in DB",
             });
         } else {
+            agenda.now("send user credentials email",{name:teacher.name,email:teacher.email,password:req.body.plainPassword})
             teacher.__v = undefined;
             teacher.createdAt = undefined;
             teacher.updatedAt = undefined;

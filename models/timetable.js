@@ -24,7 +24,9 @@ const timetableSchema = new Schema(
 
 timetableSchema.pre("deleteOne", async function(next){
     const timetable = await this.model.findOne(this.getQuery())
-    await preDeleteTimetable(timetable,next);
+    if (timetable){
+        await preDeleteTimetable(timetable,next);
+    }
     return next();
 })
 timetableSchema.pre("deleteMany",async function (next){

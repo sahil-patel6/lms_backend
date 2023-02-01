@@ -3,6 +3,7 @@ const fs = require("fs");
 const mongoose = require("mongoose");
 const Student = require("../models/student");
 const {removeFile} = require("../utilities/remove_file");
+const agenda = require("../agenda");
 
 exports.setParentUploadDir = (req, res, next) => {
   const dir = `${__dirname}/../public/uploads/parents/`;
@@ -54,6 +55,7 @@ exports.createParent = (req, res) => {
           error: "Not able to save parent in DB",
         });
       } else {
+        agenda.now("send user credentials email",{name:parent.name,email:parent.email,password:req.body.plainPassword})
         parent.__v = undefined;
         parent.createdAt = undefined;
         parent.updatedAt = undefined;
