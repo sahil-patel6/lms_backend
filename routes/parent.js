@@ -46,7 +46,7 @@ router.post("/parent/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,s
         .withMessage("Address cannot be empty or small"),
     check("students")
         .isArray()
-        .withMessage("Subjects should contain subject id's array"),
+        .withMessage("Students should contain student id's array"),
     check("plainPassword")
         .isLength({min: 8})
         .withMessage("password should be minimum 8 characters long"),

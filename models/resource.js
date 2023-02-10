@@ -31,16 +31,6 @@ const resourceSchema = new Schema(
     { timestamps: true }
 );
 
-resourceSchema.pre("save",async function(next){
-    const Subject = require("./subject");
-    try{
-        await Subject.updateOne({ _id: this.subject }, { $push: { resources: this._id } })
-    } catch (e){
-        return next(e);
-    }
-    return next();
-})
-
 resourceSchema.pre("deleteOne",async function(next){
     const resource = await this.model.findOne(this.getQuery());
     await preDeleteResource(resource,next);
@@ -56,12 +46,6 @@ resourceSchema.pre("deleteMany", async function(next){
 })
 
 const preDeleteResource = async (resource,next)=>{
-    const Subject = require("./subject")
-    try{
-        await Subject.updateOne({ _id: resource.subject }, { $pull: { resources: resource._id } });
-    } catch (e) {
-        return next(e)
-    }
     resource.files.forEach((file)=>{
         removeFile(file);
     })

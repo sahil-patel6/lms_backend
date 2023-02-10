@@ -60,7 +60,7 @@ exports.updateAdmin = (req, res) => {
         { _id: req.admin._id },
         { $set: req.body },
         {new: true})
-        .select("-__v -salt -password -createdAt -updatedAt")
+        .select("-__v -createdAt -updatedAt")
         .exec((err, admin) => {
             if (err || !admin) {
                 return res.status(400).json({
@@ -81,10 +81,14 @@ exports.updateAdmin = (req, res) => {
                             error: "Update failed",
                         });
                     }else{
+                        admin.password = undefined;
+                        admin.salt = undefined;
                         return res.json(admin);
                     }
                 }); 
             }else{
+                admin.password = undefined;
+                admin.salt = undefined;
                 return res.json(admin);
             }
         }

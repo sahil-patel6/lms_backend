@@ -3,8 +3,6 @@ const Parent = require("../models/parent");
 const Teacher = require("../models/teacher");
 const Student = require("../models/student");
 
-const { validationResult } = require("express-validator");
-
 const jwt = require("jsonwebtoken");
 const {expressjwt} = require("express-jwt");
 
@@ -26,6 +24,7 @@ exports.admin_signin = (admin, res) => {
         error: "admin Email Doesn't exist",
       });
     }
+    console.log(admin)
     if (!admin.authenticate(plainPassword)) {
       return res.status(401).json({
         error: "Email and password do not match",
@@ -53,7 +52,6 @@ exports.student_signin = (req, res) => {
 
   Student.findOne({ email })
       .populate("semester","_id name")
-      .populate("department","_id name")
       .select("-createdAt")
       .exec( (err, student) => {
     if (err || !student) {
@@ -90,8 +88,8 @@ exports.teacher_signin = (req, res) => {
   Teacher.findOne({ email })
       .populate({
         path: "subjects",
-        select: "_id name semester department",
-        populate: { path: "semester department", select: "_id name" },
+        select: "_id name semester",
+        populate: { path: "semester", select: "_id name" },
       })
       .select("-createdAt")
       .exec( (err, teacher) => {

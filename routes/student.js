@@ -16,7 +16,7 @@ const {
     setStudentUploadDir
 } = require("../controllers/student");
 
-const {checkIfDepartmentAndSemesterExists} = require("../utilities/middlewares");
+const {checkIfSemesterExists} = require("../utilities/middlewares");
 
 const { isSignedIn, isAuthenticated, isAdmin, isStudent, isTeacher, isParent} = require("../controllers/auth");
 const {handleForm} = require("../utilities/form_handler");
@@ -52,9 +52,6 @@ router.post("/student/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,
     check("semester")
         .isMongoId()
         .withMessage("Semester should be semester Id"),
-    check("department")
-        .isMongoId()
-        .withMessage("Department should be department Id"),
     check("roll_number")
         .isString()
         .withMessage("Roll No cannot be empty"),
@@ -62,7 +59,7 @@ router.post("/student/create/admin/:adminId",isSignedIn,isAuthenticated,isAdmin,
         .isLength({min: 8})
         .withMessage("password should be minimum 8 characters long"),
     validateAllErrors,
-    checkIfDepartmentAndSemesterExists,
+    checkIfSemesterExists,
     createStudent)
 
 /// GET STUDENT ROUTE FOR ALL USERS

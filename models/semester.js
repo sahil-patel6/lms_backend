@@ -15,28 +15,9 @@ const semesterSchema = new Schema(
       ref: "Department",
       required: true,
     },
-    subjects: {
-      type: [
-        {
-          type: ObjectId,
-          ref: "Subject",
-        },
-      ],
-      default: [],
-    },
   },
   { timestamps: true }
 );
-
-semesterSchema.pre("save", async function(next){
-   const Department = require("./department")
-   try{
-       await Department.updateOne({ _id: this.department },{ $push: { semesters: this._id } })
-   } catch (e) {
-       return next(e);
-   }
-   return next();
-});
 
 semesterSchema.pre("deleteOne",async function(next){
     const semester = await this.model.findOne(this.getQuery());
@@ -52,14 +33,12 @@ semesterSchema.pre("deleteMany", async function(next){
 })
 
 const preDeleteSemester = async (semester,next)=>{
-    const Department = require("./department")
     const Subject = require("./subject")
     const Timetable = require("./timetable")
     const Result = require("./result")
     const Student = require("./student")
     try {
         await Subject.deleteMany({semester:semester._id});
-        await Department.updateOne({_id:semester.department},{$pull: {semesters:semester._id}})
         await Timetable.deleteOne({semester:semester._id});
         await Result.deleteOne({semester: semester._id});
         await Student.deleteMany({semester:semester._id});

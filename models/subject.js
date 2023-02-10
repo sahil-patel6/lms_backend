@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
-const {removeFile} = require("../utilities/remove_file");
+const { removeFile } = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
+const ObjectIdForQuery = mongoose.Types.ObjectId;
 
 const subjectSchema = new Schema(
   {
@@ -20,90 +21,52 @@ const subjectSchema = new Schema(
       type: Number,
       required: true,
     },
-    resources: {
-      type: [
-        {
-          type: ObjectId,
-          ref: "Resource",
-        },
-      ],
-      default: [],
-    },
-    assignments: {
-      type: [
-        {
-          type: ObjectId,
-          ref: "Assignment",
-        },
-      ],
-      default: [],
-    },
     semester: {
       type: ObjectId,
       ref: "Semester",
-      required: true
-    },
-    department: {
-      type: ObjectId,
-      ref: "Department",
-      required: true
-    },
-    teacher: {
-      type: ObjectId,
-      ref: "Teacher",
-      default: null
+      required: true,
     },
   },
   { timestamps: true }
 );
 
-subjectSchema.pre("save",async function(next){
-    const Semester = require("./semester")
-    try{
-        await Semester.updateOne({ _id: this.semester }, { $push: { subjects: this._id } })
-    }catch (e) {
-        return next(e);
-    }
-    return next();
-})
+subjectSchema.pre("deleteOne", async function (next) {
+  const subject = await this.model.findOne(this.getQuery());
+  await preDeleteSubject(subject, next);
+  return next();
+});
 
-subjectSchema.pre("deleteOne",async function(next){
-    const subject = await this.model.findOne(this.getQuery());
-    await preDeleteSubject(subject,next);
-    return next();
-})
+subjectSchema.pre("deleteMany", async function (next) {
+  const subjects = await this.model.find(this.getQuery());
+  for (const subject of subjects) {
+    await preDeleteSubject(subject, next);
+  }
+  return next();
+});
 
-subjectSchema.pre("deleteMany", async function(next){
-    const subjects = await this.model.find(this.getQuery())
-    for (const subject of subjects) {
-        await preDeleteSubject(subject,next);
-    }
-    return next();
-})
-
-const preDeleteSubject = async (subject,next)=>{
-    const Semester = require("./semester")
-    const Resource = require("./resource")
-    const Assignment = require("./assignment")
-    const Teacher = require("./teacher")
-    const Attendace = require("./attendance")
-    try{
-        /// UPDATING SEMESTER BY REMOVING THE SUBJECT FROM ITS SUBJECTS LIST
-        await Semester.updateOne({ _id: subject.semester },{ $pull: { subjects: subject._id } });
-        /// REMOVING ALL RESOURCES FROM THIS SUBJECT
-        await Resource.deleteMany({subject:subject._id})
-        /// REMOVING ALL ASSIGNMENT FROM THIS SUBJECT
-        await Assignment.deleteMany({subject:subject._id});
-        /// REMOVING SUBJECT FROM TEACHER
-        await Teacher.updateOne({subject:subject._id},{$pull:{subjects:subject._id}})
-        /// REMOVING ALL ATTENDANCE RELATED TO SUBJECT
-        await Attendace.deleteMany({subject:subject._id});
-    } catch (e){
-        return next(e);
-    }
-    if (subject.pic_url){
-        removeFile(subject.pic_url)
-    }
-}
+const preDeleteSubject = async (subject, next) => {
+  const Resource = require("./resource");
+  const Assignment = require("./assignment");
+  const Teacher = require("./teacher");
+  const Attendace = require("./attendance");
+  try {
+    /// REMOVING ALL RESOURCES FROM THIS SUBJECT
+    await Resource.deleteMany({ subject: subject._id });
+    /// REMOVING ALL ASSIGNMENT FROM THIS SUBJECT
+    await Assignment.deleteMany({ subject: subject._id });
+    /// REMOVING SUBJECT FROM TEACHER
+    await Teacher.updateOne(
+      { subjects: { $in: [ObjectIdForQuery(subject._id)] } },
+      { $pull: { subjects: subject._id } }
+    );
+    /// REMOVING ALL ATTENDANCE RELATED TO SUBJECT
+    await Attendace.deleteMany({ subject: subject._id });
+  } catch (e) {
+    return next(e);
+  }
+  if (subject.pic_url) {
+    removeFile(subject.pic_url);
+  }
+};
 
 module.exports = mongoose.model("Subject", subjectSchema);

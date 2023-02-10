@@ -1,5 +1,4 @@
 const Student = require("../models/student");
-const Department = require("../models/department");
 const {removeFile} = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
@@ -15,7 +14,7 @@ exports.setStudentUploadDir = (req, res, next) => {
 }
 
 exports.getStudentById = (req, res, next, id) => {
-  Student.findById(id).exec((err, student) => {
+  Student.findById(id).populate('semester', "_id name").exec((err, student) => {
     if (err || !student) {
       return res.status(400).json({
         error: "No student Found",
@@ -39,10 +38,7 @@ exports.getStudent = (req, res) => {
 
 exports.getAllStudentsBySemester = (req, res) => {
   Student.find({ semester: req.params.semesterId })
-      // .populate({ path: "semester", select: "-__v -createdAt -updatedAt" })
       .populate('semester', "_id name")
-      // .populate({ path: "department", select: "-__v -createdAt -updatedAt" })
-      .populate('department',"_id name")
       .select("-createdAt -updatedAt -salt -password -__v")
       .exec((err, students) => {
         if (err || !students) {
@@ -101,7 +97,7 @@ exports.updateStudent = (req, res) => {
       { _id: req.student._id },
       { $set: req.body },
       { new: true })
-      .select("-createdAt -updatedAt -salt -password -__v")
+      .select("-createdAt -updatedAt -__v")
       .exec((err, student) => {
         if (err || !student) {
           console.log(err);
@@ -127,10 +123,14 @@ exports.updateStudent = (req, res) => {
                 error: "Update failed",
               });
             } else {
+              student.password = undefined;
+              student.salt = undefined;
               return res.json(student);
             }
           });
         } else {
+          student.password = undefined;
+          student.salt = undefined;
           return res.json(student);
         }
       }

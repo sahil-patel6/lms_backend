@@ -35,26 +35,10 @@ const assignmentSchema = new Schema(
             }],
             default: []
         },
-        submissions: {
-            type: [{
-                type: ObjectId,
-                ref: "AssignmentSubmission"
-            }],
-            default: []
-        }
     },
     { timestamps: true }
 );
 
-assignmentSchema.pre("save",async function(next){
-    const Subject = require("./subject")
-    try{
-        await Subject.updateOne({ _id: this.subject },{ $push: { assignments: this._id } });
-    } catch (e){
-        return next(e);
-    }
-    return next();
-})
 assignmentSchema.pre("deleteOne",async function (next){
     const assignment = await this.model.findOne(this.getQuery());
     await preDeleteAssignment(assignment,next);
@@ -71,9 +55,7 @@ assignmentSchema.pre("deleteMany", async function(next){
 
 const preDeleteAssignment = async (assignment, next) =>{
     const AssignmentSubmission = require("./assignment_submission")
-    const Subject = require("./subject")
     try{
-        await Subject.updateOne({_id: assignment.subject}, {$pull: {assignments: assignment._id}})
         await AssignmentSubmission.deleteMany({assignment:assignment._id})
     }catch (e){
         return next(e);

@@ -88,18 +88,6 @@ teacherSchema.methods = {
     }
 };
 
-teacherSchema.pre("save",async function(next){
-    const Subject = require("./subject")
-    try{
-        for (const subject of this.subjects){
-            await Subject.updateOne({_id:subject},{teacher: this._id});
-        }
-    }catch (e) {
-        return next(e);
-    }
-    return next();
-})
-
 teacherSchema.pre("deleteOne", async function(next){
     const teacher = await this.model.findOne(this.getQuery())
     await preDeleteTeacher(teacher,next);
@@ -114,14 +102,6 @@ teacherSchema.pre("deleteMany",async function (next){
 })
 
 const preDeleteTeacher = async (teacher,next) =>{
-    const Subject = require("./subject")
-    try{
-        for (const subject of teacher.subjects){
-            await Subject.updateOne({_id:subject},{teacher: null});
-        }
-    }catch (e) {
-        return next(e);
-    }
     if (teacher.profile_pic){
         removeFile(teacher.profile_pic)
     }

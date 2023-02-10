@@ -23,17 +23,7 @@ const assignmentSubmissionSchema = new Schema({
     },
     {timestamps: true},
 );
-assignmentSubmissionSchema.pre("save",async function(next){
-    const Assignment = require("./assignment")
-    try{
-        await Assignment.updateOne(
-            { _id: this.assignment },
-            { $push: { submissions: this._id } });
-    } catch (e){
-        return next(e);
-    }
-    return next();
-})
+
 assignmentSubmissionSchema.pre("deleteOne",async function (next){
     const assignment_submission = await this.model.findOne(this.getQuery()).populate("assignment");
     await preDeleteAssignmentSubmission(assignment_submission,next);
@@ -49,15 +39,6 @@ assignmentSubmissionSchema.pre("deleteMany",async function(next){
 })
 
 const preDeleteAssignmentSubmission = async (assignment_submission,next) =>{
-    const Assignment = require("./assignment")
-    /// REMOVING ASSIGNMENT SUBMISSION FROM ASSIGNMENT
-    try{
-        await Assignment.updateOne(
-            { _id: assignment_submission.assignment },
-            { $pull: { submissions: assignment_submission._id } })
-    }catch (e){
-        return next(e);
-    }
     /// DELETE ASSIGNMENT SUBMISSION FILES IF EXISTS
     assignment_submission.submission.forEach((submission_file)=>{
         removeFile(submission_file);

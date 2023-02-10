@@ -12,7 +12,7 @@ const {
   setSubjectUploadDir,
 } = require("../controllers/subject");
 
-const {checkIfDepartmentAndSemesterExists} = require("../utilities/middlewares")
+const {checkIfSemesterExists} = require("../utilities/middlewares")
 
 const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const {getAdminById} =  require("../controllers/admin");
@@ -47,11 +47,8 @@ router.post(
     check("semester")
         .isMongoId()
         .withMessage("Semester should be a semester ID"),
-    check("department")
-        .isMongoId()
-        .withMessage("Department should be a department ID"),
     validateAllErrors,
-  checkIfDepartmentAndSemesterExists,
+  checkIfSemesterExists,
   createSubject
 );
 

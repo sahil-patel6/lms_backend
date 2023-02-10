@@ -1,6 +1,5 @@
 const Assignment = require("../models/assignment");
 const fs = require('fs');
-const Subject = require("../models/subject");
 const {removeFile} = require("../utilities/remove_file");
 
 exports.setAssignmentUploadDir = (req, res, next)=>{
@@ -15,16 +14,8 @@ exports.setAssignmentUploadDir = (req, res, next)=>{
 
 exports.getAssignmentById = (req, res, next, id) => {
     Assignment.findById(id)
-        .populate({
-            path: "subject",
-            select: "_id name semester department teacher",
-            populate: {path: "semester department teacher", select:"_id name"}
-        })
-        .populate({
-            path:"submissions",
-            select: "-createdAt -updatedAt -__v -assignment",
-            populate:{path:"student",select:"_id name"}
-        }).exec((err, assignment) => {
+        .populate("subject","_id name")
+        .exec((err, assignment) => {
             if (err || !assignment) {
                 return res.status(400).json({
                     error: "No Assignment Found",
@@ -44,11 +35,7 @@ exports.getAssignment = (req, res) => {
 
 exports.getAllAssignmentsBySubject = (req, res) => {
     Assignment.find({ subject: req.params.subjectId })
-        .populate({
-            path: "subject",
-            select: "_id name semester department teacher",
-            populate: {path: "semester department teacher", select:"_id name"}
-        })
+        .populate("subject","_id name")
         .select("-createdAt -updatedAt -__v")
         .exec((err, assignments) => {
             if (err || !assignments) {

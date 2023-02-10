@@ -55,10 +55,8 @@ router.get( "/assignment_submission/:assignment_submissionId/student/:studentId"
 router.get( "/assignment_submission/:assignment_submissionId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getAssignmentSubmission);
 
 /// GET ALL ASSIGNMENT SUBMISSIONS BY ASSIGNMENT ID ROUTES FOR ALL USERS
-router.get( "/assignment_submissions/:assignmentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getAllAssignmentSubmissionsByAssignment);
-router.get( "/assignment_submissions/:assignmentId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getAllAssignmentSubmissionsByAssignment);
-router.get( "/assignment_submissions/:assignmentId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getAllAssignmentSubmissionsByAssignment);
-router.get( "/assignment_submissions/:assignmentId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getAllAssignmentSubmissionsByAssignment);
+router.get( "/assignment_submissions/assignment/:assignmentId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getAllAssignmentSubmissionsByAssignment);
+router.get( "/assignment_submissions/assignment/:assignmentId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getAllAssignmentSubmissionsByAssignment);
 
 /// UPDATE ROUTE FOR ASSIGNMENT SUBMISSION
 router.put(

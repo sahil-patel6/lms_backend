@@ -1,8 +1,11 @@
-const Department = require("../models/department")
-const Parent = require("../models/parent")
-const Student = require("../models/student")
+const Department = require("../models/department");
+const Parent = require("../models/parent");
+const Student = require("../models/student");
 const Assignment = require("../models/assignment");
 const Subject = require("../models/subject");
+const Teacher = require("../models/teacher");
+const Semester = require("../models/semester");
+const mongoose = require("mongoose");
 
 /// USED IN ASSIGNMENT SUBMISSION
 exports.checkIfAssignmentAndStudentExistsAndAreValid = (req, res, next) => {
@@ -14,9 +17,9 @@ exports.checkIfAssignmentAndStudentExistsAndAreValid = (req, res, next) => {
           error: "No Assignment Found",
         });
       }
-      console.log(req.student.semester, assignment.subject.semester);
+      console.log(req.student.semester._id, assignment.subject.semester);
       if (
-        req.student.semester.toString() !==
+        req.student.semester._id.toString() !==
         assignment.subject.semester.toString()
       ) {
         return res.status(400).json({
@@ -27,21 +30,29 @@ exports.checkIfAssignmentAndStudentExistsAndAreValid = (req, res, next) => {
     });
 };
 
-/// USED IN ASSIGNMENT
+/// USED IN ASSIGNMENT, RESOURCE
 exports.checkIfSubjectAndTeacherExistsAndAreValid = (req, res, next) => {
   Subject.findById(req.body.subject, (err, subject) => {
-    if (err || !subject || !subject?.teacher) {
+    if (err || !subject) {
       return res.status(400).json({
         error: "No Subject Found",
       });
     }
-    console.log(req.teacher._id, subject.teacher);
-    if (req.teacher._id.toString() !== subject.teacher._id.toString()) {
-      return res.status(400).json({
-        error: "Forbidden to create resource",
-      });
-    }
-    next();
+    Teacher.findOne(
+      {
+        subjects: {
+          $in: [subject._id],
+        },
+      },
+      (err, teacher) => {
+        if (err || !teacher || teacher._id.toString() !== req.teacher._id.toString()) {
+          return res.status(400).json({
+            error: "Forbidden to create resource",
+          });
+        }
+        next();
+      }
+    );
   });
 };
 
@@ -75,41 +86,16 @@ exports.checkIfStudentsExists = (req, res, next) => {
   });
 };
 
-/// USED IN RESOURCES
-exports.checkIfSubjectAndTeacherExistsAndAreValid = (req, res, next) => {
-  Subject.findById(req.body.subject, (err, subject) => {
-    if (err || !subject || !subject?.teacher) {
-      return res.status(400).json({
-        error: "No Subject Found",
-      });
-    }
-    console.log(req.teacher._id, subject.teacher);
-    if (req.teacher._id.toString() !== subject.teacher._id.toString()) {
-      return res.status(400).json({
-        error: "Forbidden to create resource",
-      });
-    }
-    next();
-  });
-};
-
 /// USED IN RESULT, STUDENT, SUBJECT, TIMETABLE
-exports.checkIfDepartmentAndSemesterExists = (req, res, next) => {
-  Department.findById(req.body.department, (err, department) => {
-    if (err || !department) {
+exports.checkIfSemesterExists = (req, res, next) => {
+  Semester.findOne({_id: req.body.semester},(err,semester)=>{
+    if (err || !semester){
       return res.status(400).json({
-        error: "No department found",
-      });
-    }
-    if (
-      !department.semesters.find((semester) => semester == req.body.semester)
-    ) {
-      return res.status(400).json({
-        error: "No Semester found",
-      });
+        error: "No Semester Found"
+      })
     }
     next();
-  });
+  })
 };
 
 /// USED IN SEMESTER
@@ -128,27 +114,27 @@ exports.checkIfDepartmentExists = (req, res, next) => {
 };
 
 /// USED IN TEACHER
-exports.checkIfSubjectsExists = (req,res,next) =>{
-    if (req.body.subjects){
-        try{
-            req.body.subjects.map(subject=>{
-                return new mongoose.mongo.ObjectId(subject)
-            })
-        } catch (e){
-            console.log(e);
-            return res.status(400).json({
-                error: "An error occurred while processing subjects"
-            })
-        }
-        Subject.find({_id:{$in:req.body.subjects}},(err,subjects)=>{
-            if (err || !subjects || subjects.length !== req.body.subjects.length){
-                return res.status(400).json({
-                    error: "Subjects not found"
-                })
-            }
-            return next();
-        })
-    }else{
-        next();
+exports.checkIfSubjectsExists = (req, res, next) => {
+  if (req.body.subjects) {
+    try {
+      req.body.subjects.map((subject) => {
+        return new mongoose.mongo.ObjectId(subject);
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(400).json({
+        error: "An error occurred while processing subjects",
+      });
     }
-}
+    Subject.find({ _id: { $in: req.body.subjects } }, (err, subjects) => {
+      if (err || !subjects || subjects.length !== req.body.subjects.length) {
+        return res.status(400).json({
+          error: "Subjects not found",
+        });
+      }
+      return next();
+    });
+  } else {
+    next();
+  }
+};

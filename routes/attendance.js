@@ -41,6 +41,9 @@ router.post(
   check("attendance.*.subject")
     .isMongoId()
     .withMessage("Subject should be a subject ID"),
+    check("attendance.*.semester")
+      .isMongoId()
+      .withMessage("Semester should be a semester ID"),
   check("attendance.*.present")
     .isBoolean()
     .withMessage("present should be a boolean"),

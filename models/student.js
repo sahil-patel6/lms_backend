@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const {removeFile} = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
+const ObjectIdForQuery = mongoose.Types.ObjectId;
 
 const studentSchema = new Schema(
     {
@@ -46,11 +47,6 @@ const studentSchema = new Schema(
         device_id: {
             type: String,
             trim: true,
-        },
-        department: {
-            type: ObjectId,
-            ref: "Department",
-            required: true,
         },
         semester: {
             type: ObjectId,
@@ -115,7 +111,10 @@ const preDeleteStudent = async (student,next) =>{
     const Attendance = require("./attendance")
     try{
         /// REMOVING STUDENT FROM PARENT'S STUDENT LIST
-        await Parent.updateOne({students:student._id},{$pull:{students:student._id}})
+        await Parent.updateOne(
+            { students: { $in: [ObjectIdForQuery(student._id)] } },
+            { $pull: { students: student._id } }
+          );
         /// REMOVING STUDENT'S ATTENDANCE
         await Attendance.deleteMany({student:student._id});
     } catch (e) {

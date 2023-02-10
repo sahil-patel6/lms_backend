@@ -49,22 +49,20 @@ router.post(
     check("subject")
         .isMongoId()
         .withMessage("Subject should be a subject ID"),
-    // check("dueDate")
-    //     .isEmpty()
-    //     .withMessage("dueDate should be date"),
+    check("dueDate")
+        .isISO8601()
+        .withMessage("dueDate should be date"),
     validateAllErrors,
     checkIfSubjectAndTeacherExistsAndAreValid,
     createAssignment
 );
 
 /// GET ASSIGNMENT ROUTES FOR ALL USERS
-router.get( "/assignment/:assignmentId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getAssignment);
 router.get( "/assignment/:assignmentId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getAssignment);
 router.get( "/assignment/:assignmentId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getAssignment);
 router.get( "/assignment/:assignmentId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getAssignment);
 
 /// GET ALL ASSIGNMENTS BY SUBJECT ID ROUTES FOR ALL USERS
-router.get( "/assignments/:subjectId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getAllAssignmentsBySubject);
 router.get( "/assignments/:subjectId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getAllAssignmentsBySubject);
 router.get( "/assignments/:subjectId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getAllAssignmentsBySubject);
 router.get( "/assignments/:subjectId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getAllAssignmentsBySubject);

@@ -12,7 +12,7 @@ const {
   setTimetableUploadDir,
 } = require("../controllers/timetable");
 
-const {checkIfDepartmentAndSemesterExists} =require("../utilities/middlewares")
+const {checkIfSemesterExists} =require("../utilities/middlewares")
 
 const { isSignedIn, isAuthenticated, isTeacher, isStudent, isParent} = require("../controllers/auth");
 const {validateAllErrors} = require("../utilities/error")
@@ -43,7 +43,7 @@ router.post(
         .isMongoId()
         .withMessage("Department should be a department ID"),
     validateAllErrors,
-  checkIfDepartmentAndSemesterExists,
+  checkIfSemesterExists,
   createTimetable
 );
 

@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const { ObjectId } = mongoose.Schema;
 
 const departmentSchema = new Schema(
   {
@@ -19,16 +18,6 @@ const departmentSchema = new Schema(
       type: Number,
       trim: true,
       required: true,
-    },
-    semesters: {
-      type: [
-        {
-          type: ObjectId,
-          ref: "Semester",
-          required: true,
-        },
-      ],
-      default: [],
     },
   },
   { timestamps: true }

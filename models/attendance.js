@@ -19,11 +19,6 @@ const attendanceSchema = new Schema(
             ref: "Subject",
             required: true,
         },
-        semester: {
-            type: ObjectId,
-            ref: "Semester",
-            required: true,
-        },
         present: {
             type: Boolean,
             required: true

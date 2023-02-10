@@ -1,5 +1,4 @@
 const Resource = require("../models/resource");
-const Subject = require("../models/subject");
 const fs = require("fs");
 const {removeFile} = require("../utilities/remove_file");
 
@@ -14,12 +13,8 @@ exports.setResourceUploadDir = (req, res, next)=>{
 }
 
 exports.getResourceById = (req, res, next, id) => {
-    Resource.findById(id)
-        .populate({
-            path: "subject",
-            select: "_id name semester department teacher",
-            populate: {path: "semester department teacher", select:"_id name"}
-        })
+    Resource.findById(id)        
+        .populate("subject","_id name")
         .exec((err, resource) => {
             if (err || !resource) {
                 return res.status(400).json({
@@ -40,11 +35,7 @@ exports.getResource = (req, res) => {
 
 exports.getAllResourcesBySubject = (req, res) => {
     Resource.find({ subject: req.params.subjectId })
-        .populate({
-            path: "subject",
-            select: "_id name semester department teacher",
-            populate: {path: "semester department teacher", select:"_id name"}
-        })
+        .populate("subject","_id name")
         .select("-createdAt -updatedAt -__v")
         .exec((err, resources) => {
             if (err || !resources) {

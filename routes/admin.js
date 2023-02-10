@@ -18,7 +18,7 @@ router.post("/admin/create",[
   ],validateAllErrors,createAdmin);
 
 router.get("/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getAdmin);
-router.get("/admin/:adminId/all", isSignedIn, isAuthenticated, isAdmin, getAllAdmins);
+router.get("/admins/:adminId/", isSignedIn, isAuthenticated, isAdmin, getAllAdmins);
 
 router.put("/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, updateAdmin);
 

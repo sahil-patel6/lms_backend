@@ -1,6 +1,5 @@
 const AssignmentSubmission = require("../models/assignment_submission");
 const fs = require("fs");
-const Assignment = require("../models/assignment");
 const {removeFile} = require("../utilities/remove_file");
 
 exports.setAssignmentSubmissionUploadDir = (req, res, next)=>{
@@ -17,10 +16,8 @@ exports.getAssignmentSubmissionById = (req, res, next, id) => {
     AssignmentSubmission.findById(id)
         .populate({
             path: "student",
-            select: "_id name semester department",
-            populate: {path: "semester department", select:"_id name"}
+            select: "_id name",
         })
-        .populate("assignment","-__v -createdAt -updatedAt -submissions")
         .exec((err, assignment_submission) => {
             if (err || !assignment_submission) {
                 console.log(err)
@@ -41,13 +38,15 @@ exports.getAssignmentSubmission = (req, res) => {
 };
 
 exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
-    AssignmentSubmission.find({ subject: req.params.subjectId })
+    let params = {subject:req.params.subjectId};
+    if (req.isStudent){
+        params.student = req.student._id;
+    }
+    AssignmentSubmission.find(params)
         .populate({
             path: "student",
-            select: "_id name semester department",
-            populate: {path: "semester department", select:"_id name"}
+            select: "_id name",
         })
-        .populate("assignment","-__v -createdAt -updatedAt -submissions")
         .select("-createdAt -updatedAt -__v")
         .exec((err, assignment_submissions) => {
             if (err || !assignment_submissions) {
@@ -58,7 +57,7 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
                         err,
                 });
             } else {
-                return res.json({assignment_submissions});
+                return res.json(assignment_submissions);
             }
         });
 };
@@ -140,10 +139,8 @@ exports.updateAssignmentSubmission = (req, res) => {
         { new: true })
         .populate({
             path: "student",
-            select: "_id name semester department",
-            populate: {path: "semester department", select:"_id name"}
+            select: "_id name",
         })
-        .populate("assignment","-__v -createdAt -updatedAt -submissions")
         .select("-createdAt -updatedAt -__v")
         .exec((err, assignment_submission) => {
                 if (err || !assignment_submission) {

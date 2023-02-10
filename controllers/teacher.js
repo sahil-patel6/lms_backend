@@ -1,7 +1,5 @@
 const Teacher = require("../models/teacher");
-const Subject = require("../models/subject")
 const fs = require('fs');
-const mongoose = require("mongoose")
 const {removeFile} = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
@@ -82,7 +80,7 @@ exports.updateTeacher = (req, res) => {
         {_id: req.teacher._id},
         {$set: req.body},
         {new: true})
-        .select("-createdAt -updatedAt -__v -salt -password")
+        .select("-createdAt -updatedAt -__v")
         .exec((err, teacher) => {
             if (err || !teacher) {
                 console.log(err);
@@ -106,12 +104,16 @@ exports.updateTeacher = (req, res) => {
                         return res.status(400).json({
                             error: "Update failed",
                         });
-                    } else {
+                    } else {        
+                    teacher.password = undefined;
+                    teacher.salt = undefined;
                         return res.json(teacher);
                     }
                 });
             } else {
                 console.log("NO need to update teacher password");
+                teacher.password = undefined;
+                teacher.salt = undefined;
                 return res.json(teacher);
             }
         }

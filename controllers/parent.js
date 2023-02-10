@@ -1,7 +1,5 @@
 const Parent = require("../models/parent");
 const fs = require("fs");
-const mongoose = require("mongoose");
-const Student = require("../models/student");
 const {removeFile} = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
@@ -79,7 +77,7 @@ exports.updateParent = (req, res) => {
       { _id: req.parent._id },
       { $set: req.body },
       { new: true })
-        .select("-createdAt -updatedAt -salt -password -__v")
+        .select("-createdAt -updatedAt -__v")
         .exec((err, parent) => {
           if (err || !parent) {
             console.log(err);
@@ -105,10 +103,14 @@ exports.updateParent = (req, res) => {
                   error: "Update failed",
                 });
               } else {
+                parent.password = undefined;
+                parent.salt = undefined;
                 return res.json(parent);
               }
             });
           } else {
+            parent.password = undefined;
+            parent.salt = undefined;
             return res.json(parent);
           }
         }
