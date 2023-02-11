@@ -60,7 +60,7 @@ exports.getAttendanceById = (req, res, next, id) => {
     });
 };
 
-exports.getAttendance = (req, res, next) => {
+exports.getAttendance = (req, res) => {
   Attendance.aggregate([
     {
       $match: req.attendance_query,
@@ -112,7 +112,7 @@ exports.getAttendance = (req, res, next) => {
       },
     },
     {
-      $lookup:{
+      $lookup: {
         from: "students",
         localField: "_id",
         foreignField: "_id",
@@ -122,36 +122,56 @@ exports.getAttendance = (req, res, next) => {
             $project: {
               _id: 1,
               name: 1,
-            }
-          }
-        ]
-      }
+            },
+          },
+        ],
+      },
     },
-    /// TODO: NEED CHANGES
     {
-      $lookup:{
+      $unwind: "$student"
+    },
+    {
+      $unwind: "$subjects",
+    },
+    {
+      $lookup: {
         from: "subjects",
         localField: "subjects.subject",
         foreignField: "_id",
-        let: {totalLectures: "$subjects.totalLectures"},
+        let: { subject: "$subjects" },
         as: "subjects",
         pipeline: [
           {
             $project: {
               _id: 1,
               name: 1,
-              totalLectures: "$$totalLectures",
-              totalLecturesAbsent:1,
-              totalLecturesAttended: 1,
-            }
-          }
-        ]
-      }
+              totalLectures: "$$subject.totalLectures",
+              totalLecturesAttended: "$$subject.totalLecturesAttended",
+              totalLecturesAbsent: "$$subject.totalLecturesAbsent",
+              attendance_percentage: "$$subject.attendance_percentage",
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: "$subjects"
+    },
+    {
+      $group: {
+        _id: "$subjects._id",
+        subjects: { $push: "$subjects" },
+        totalLectures: {$first : "$totalLectures"},
+        totalLecturesAttended: {$first : "$totalLecturesAttended"},
+        totalLecturesAbsent: {$first : "$totalLecturesAbsent"},
+        attendance_percentage: {$first: "$attendance_percentage"},
+        student: {$first: "$student"},
+      },
     },
     {
       $project: {
         _id: 1,
-        student:1,
+        student: 1,
         totalLectures: 1,
         totalLecturesAttended: 1,
         totalLecturesAbsent: 1,
@@ -168,7 +188,7 @@ exports.getAttendance = (req, res, next) => {
         },
         subjects: 1,
       },
-    }
+    },
   ]).exec((err, attendances) => {
     if (err || !attendances) {
       console.log("Error while getting attendace: ", err);
@@ -196,7 +216,7 @@ exports.getAttendance = (req, res, next) => {
   //   });
 };
 
-exports.createAttendance = (req, res, next) => {
+exports.createAttendance = (req, res) => {
   Attendance.insertMany(req.body.attendance, (err, attendances) => {
     if (err || !attendances) {
       console.log(err);
@@ -218,8 +238,8 @@ exports.updateAttendance = (req, res) => {
     { $set: req.body },
     { new: true }
   )
-    .populate("subject","_id name")
-    .populate("student","_id name")
+    .populate("subject", "_id name")
+    .populate("student", "_id name")
     .select("-createdAt -updatedAt -__v")
     .exec((err, attendance) => {
       if (err || !attendance) {
