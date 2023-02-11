@@ -18,8 +18,7 @@ const teacherRoutes = require("./routes/teacher");
 const resourceRoutes = require("./routes/resource");
 const assignmentRoutes = require("./routes/assignment");
 const assignmentSubmissionRoutes = require("./routes/assignment_submission");
-const timetableRoutes = require("./routes/timetable");
-const resultRoutes = require("./routes/result");
+const noticeRoutes = require("./routes/notice")
 const attendanceRoutes = require("./routes/attendance");
 const testRoutes = require("./routes/test");
 
@@ -49,8 +48,7 @@ app.use("/api/v1/", teacherRoutes);
 app.use("/api/v1/",resourceRoutes)
 app.use("/api/v1/",assignmentRoutes)
 app.use("/api/v1/",assignmentSubmissionRoutes)
-app.use("/api/v1/",timetableRoutes)
-app.use("/api/v1/",resultRoutes)
+app.use("/api/v1/",noticeRoutes)
 app.use("/api/v1/",attendanceRoutes)
 app.use("/api/v1/", testRoutes);
 

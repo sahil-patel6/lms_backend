@@ -34,13 +34,11 @@ semesterSchema.pre("deleteMany", async function(next){
 
 const preDeleteSemester = async (semester,next)=>{
     const Subject = require("./subject")
-    const Timetable = require("./timetable")
-    const Result = require("./result")
+    const Notice = require("./notice");
     const Student = require("./student")
     try {
         await Subject.deleteMany({semester:semester._id});
-        await Timetable.deleteOne({semester:semester._id});
-        await Result.deleteOne({semester: semester._id});
+        await Notice.deleteOne({semester:semester._id})
         await Student.deleteMany({semester:semester._id});
     } catch (e) {
         return next(e);
