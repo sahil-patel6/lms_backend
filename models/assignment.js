@@ -29,6 +29,10 @@ const assignmentSchema = new Schema(
             type: Date,
             required: true
         },
+        isSubmissionAllowed: {
+            type: Boolean,
+            default: true
+        },
         assignment_question_files: {
             type: [{
                 type: String,

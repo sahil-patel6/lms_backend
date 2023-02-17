@@ -24,6 +24,19 @@ const assignmentSubmissionSchema = new Schema({
     {timestamps: true},
 );
 
+assignmentSubmissionSchema.pre("save",async function(next){
+    try {
+        const Assignment = require("./assignment");
+        const assignment = await Assignment.findOne({_id: this.assignment});
+        console.log(assignment);
+        if (!assignment.isSubmissionAllowed){
+            throw new Error("Submission is not allowed")
+        }
+    } catch (error) {
+        next(error);
+    }
+})
+
 assignmentSubmissionSchema.pre("deleteOne",async function (next){
     const assignment_submission = await this.model.findOne(this.getQuery()).populate("assignment");
     await preDeleteAssignmentSubmission(assignment_submission,next);

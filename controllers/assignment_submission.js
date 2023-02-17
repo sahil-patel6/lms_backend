@@ -62,7 +62,7 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
         });
 };
 
-exports.createAssignmentSubmission = (req, res,next) => {
+exports.createAssignmentSubmission = (req, res) => {
     if (req?.file?.submission){
         req.body.submission = []
         if (Array.isArray(req.file.submission)){
@@ -89,12 +89,12 @@ exports.createAssignmentSubmission = (req, res,next) => {
             const assignment_submission = new AssignmentSubmission(req.body);
             assignment_submission.save((err, assignment_submission) => {
                 if (err || !assignment_submission) {
-                    console.log(err);
+                    console.log(err.message);
                     req.body.submission.forEach(submission=>{
                         removeFile(submission);
                     })
                     return res.status(400).json({
-                        error: "Not able to save assignment_submission in DB",
+                        error: err.message ?? "Not able to save assignment_submission in DB",
                     });
                 } else {
                     assignment_submission.__v = undefined;

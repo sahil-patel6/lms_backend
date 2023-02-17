@@ -7,6 +7,7 @@ const connectionOpts = {
 const agenda = new Agenda(connectionOpts);
 
 require("./jobs/email")(agenda);
+require("./jobs/assignment")(agenda);
 (async function () {
   await agenda.start();
   console.log("AGENDA STARTED")
