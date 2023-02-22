@@ -18,12 +18,12 @@ const teacherRoutes = require("./routes/teacher");
 const resourceRoutes = require("./routes/resource");
 const assignmentRoutes = require("./routes/assignment");
 const assignmentSubmissionRoutes = require("./routes/assignment_submission");
-const noticeRoutes = require("./routes/notice")
+const noticeRoutes = require("./routes/notice");
 const attendanceRoutes = require("./routes/attendance");
 const testRoutes = require("./routes/test");
 
 //MiddleWares
-app.use(express.static('public'))
+app.use(express.static("public"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
@@ -37,24 +37,22 @@ app.use("/api/v1/", semesterRoutes);
 app.use("/api/v1/", studentRoutes);
 app.use("/api/v1/", subjectRoutes);
 app.use("/api/v1/", teacherRoutes);
-app.use("/api/v1/",resourceRoutes)
-app.use("/api/v1/",assignmentRoutes)
-app.use("/api/v1/",assignmentSubmissionRoutes)
-app.use("/api/v1/",noticeRoutes)
-app.use("/api/v1/",attendanceRoutes)
+app.use("/api/v1/", resourceRoutes);
+app.use("/api/v1/", assignmentRoutes);
+app.use("/api/v1/", assignmentSubmissionRoutes);
+app.use("/api/v1/", noticeRoutes);
+app.use("/api/v1/", attendanceRoutes);
 app.use("/api/v1/", testRoutes);
 
 const port = process.env.PORT || 8000;
 
 mongoose
-    .set('strictQuery',true)
-    .connect(process.env.DATABASE)
-    .then( (val)=>{
-        console.log("DB connected successfully");
- 
-app.listen(port, () => {
-    console.log(`App is running at port ${port}`);
-});
-    })
-    .catch((err) => console.log(err));
-
+  .set("strictQuery", true)
+  .connect(process.env.DATABASE)
+  .then((val) => {
+    console.log("DB connected successfully");
+    app.listen(port, () => {
+      console.log(`App is running at port ${port}`);
+    });
+  })
+  .catch((err) => console.log(err));

@@ -2,3 +2,4 @@
 .env
 .eslintrc.json
 /public/uploads/
+credentials.json
