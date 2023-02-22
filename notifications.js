@@ -1,4 +1,3 @@
-@@ -0,0 +1,29 @@
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./credentials.json");
