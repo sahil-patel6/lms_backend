@@ -22,14 +22,6 @@ const noticeRoutes = require("./routes/notice")
 const attendanceRoutes = require("./routes/attendance");
 const testRoutes = require("./routes/test");
 
-mongoose
-    .set('strictQuery',true)
-    .connect(process.env.DATABASE)
-    .then( (val)=>{
-        console.log("DB connected successfully");
-    })
-    .catch((err) => console.log(err));
-
 //MiddleWares
 app.use(express.static('public'))
 app.use(express.json());
@@ -54,7 +46,15 @@ app.use("/api/v1/", testRoutes);
 
 const port = process.env.PORT || 8000;
 
+mongoose
+    .set('strictQuery',true)
+    .connect(process.env.DATABASE)
+    .then( (val)=>{
+        console.log("DB connected successfully");
+ 
 app.listen(port, () => {
     console.log(`App is running at port ${port}`);
 });
+    })
+    .catch((err) => console.log(err));
 
