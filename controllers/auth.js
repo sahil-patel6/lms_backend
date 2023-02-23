@@ -128,11 +128,12 @@ exports.parent_signin = (req, res) => {
       .populate({
         path:"students",
         select:"-salt -password -createdAt -updatedAt -__v",
-        populate: { path: "department semester", select: "_id name"}
+        populate: { path: "semester", select: "_id name"}
       })
       .select("-createdAt")
       .exec( (err, parent) => {
     if (err || !parent) {
+		console.log(err);
       return res.status(400).json({
         error: "Parent Email Doesn't exist",
       });
