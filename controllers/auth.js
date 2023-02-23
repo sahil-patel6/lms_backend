@@ -53,7 +53,7 @@ exports.student_signin = (req, res) => {
   Student.findOne({ email })
       .populate("semester","_id name")
       .select("-createdAt")
-      .exec( (err, student) => {
+      .exec( async (err, student) => {
     if (err || !student) {
       return res.status(400).json({
         error: "student Email Doesn't exist",
@@ -66,7 +66,9 @@ exports.student_signin = (req, res) => {
       });
     }
     const token = jwt.sign({ _id: student._id }, process.env.SECRET);
-
+    if (req.body.fcm_token){
+      await Student.updateOne({email},{fcm_token:req.body.fcm_token});
+    }
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });
@@ -92,7 +94,7 @@ exports.teacher_signin = (req, res) => {
         populate: { path: "semester", select: "_id name" },
       })
       .select("-createdAt")
-      .exec( (err, teacher) => {
+      .exec( async (err, teacher) => {
     if (err || !teacher) {
       return res.status(400).json({
         error: "teacher Email Doesn't exist",
@@ -105,7 +107,9 @@ exports.teacher_signin = (req, res) => {
       });
     }
     const token = jwt.sign({ _id: teacher._id }, process.env.SECRET);
-
+    if (req.body.fcm_token){
+      await Teacher.updateOne({email},{fcm_token:req.body.fcm_token});
+    }
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });
@@ -131,7 +135,7 @@ exports.parent_signin = (req, res) => {
         populate: { path: "semester", select: "_id name"}
       })
       .select("-createdAt")
-      .exec( (err, parent) => {
+      .exec(async  (err, parent) => {
     if (err || !parent) {
 		console.log(err);
       return res.status(400).json({
@@ -145,7 +149,9 @@ exports.parent_signin = (req, res) => {
       });
     }
     const token = jwt.sign({ _id: parent._id }, process.env.SECRET);
-
+    if (req.body.fcm_token){
+      await Parent.updateOne({email},{fcm_token:req.body.fcm_token});
+    }
     res.cookie("token", token, {
       expire: new Date() + 9999,
     });

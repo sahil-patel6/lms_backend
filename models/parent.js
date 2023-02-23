@@ -34,7 +34,7 @@ const parentSchema = new Schema(
       trim: true,
       default: "",
     },
-    device_id: {
+    fcm_token: {
       type: String,
       trim: true,
     },
