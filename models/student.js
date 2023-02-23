@@ -47,6 +47,7 @@ const studentSchema = new Schema(
         fcm_token: {
             type: String,
             trim: true,
+            default: ""
         },
         semester: {
             type: ObjectId,

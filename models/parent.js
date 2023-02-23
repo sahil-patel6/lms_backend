@@ -37,6 +37,7 @@ const parentSchema = new Schema(
     fcm_token: {
       type: String,
       trim: true,
+      default: "",
     },
     students: {
       type: [
