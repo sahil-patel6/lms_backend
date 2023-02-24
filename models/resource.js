@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const {removeFile} = require("../utilities/remove_file");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
+const fileSchema = require("./file_schema");
 
 const resourceSchema = new Schema(
     {
@@ -23,7 +24,7 @@ const resourceSchema = new Schema(
         },
         files: {
             type: [{
-                type: String,
+                type: fileSchema,
             }],
             default: [],
         }
@@ -47,7 +48,7 @@ resourceSchema.pre("deleteMany", async function(next){
 
 const preDeleteResource = async (resource,next)=>{
     resource.files.forEach((file)=>{
-        removeFile(file);
+        removeFile(file.fcs_path);
     })
 }
 

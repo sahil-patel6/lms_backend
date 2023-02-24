@@ -31,7 +31,7 @@ exports.getAllAdmins = (req,res) => {
                 error: "An error occurred while trying to find all admin from db " + err,
             });
         }else{
-            return res.json({admins});
+            return res.json(admins);
         }
     })
 }

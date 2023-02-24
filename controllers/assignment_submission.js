@@ -63,23 +63,26 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
 };
 
 exports.createAssignmentSubmission = (req, res) => {
-    if (req?.file?.submission){
-        req.body.submission = []
-        if (Array.isArray(req.file.submission)){
-            req.file.submission.forEach((f)=>{
-                req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
-            })
-        }else{
-            req.body.submission.push(`/uploads/assignment_submissions/${req.file.submission.newFilename}`);
-        }
-    }else{
-        req.body.submission = [];
-    }
+    // if (req?.file?.submission){
+    //     req.body.submission = []
+    //     if (Array.isArray(req.file.submission)){
+    //         req.file.submission.forEach((f)=>{
+    //             req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
+    //         })
+    //     }else{
+    //         req.body.submission.push(`/uploads/assignment_submissions/${req.file.submission.newFilename}`);
+    //     }
+    // }else{
+    //     req.body.submission = [];
+    // }
     AssignmentSubmission.findOne({assignment:req.body.assignment,student:req.body.student},(err,assignmentsubmission)=>{
         if(assignmentsubmission){
             /// IF IT ALREADY EXISTS THEN THE UPLOADED SUBMISSION SHOULD BE DELETED
+            // req.body.submission.forEach(submission=>{
+            //     removeFile(submission);
+            // })
             req.body.submission.forEach(submission=>{
-                removeFile(submission);
+                removeFile(submission.fcs_path);
             })
             return res.status(400).json({
                 error: "You have already submitted the assignment so please try to update it."
@@ -90,8 +93,11 @@ exports.createAssignmentSubmission = (req, res) => {
             assignment_submission.save((err, assignment_submission) => {
                 if (err || !assignment_submission) {
                     console.log(err.message);
+                    // req.body.submission.forEach(submission=>{
+                    //     removeFile(submission);
+                    // })
                     req.body.submission.forEach(submission=>{
-                        removeFile(submission);
+                        removeFile(submission.fcs_path);
                     })
                     return res.status(400).json({
                         error: err.message ?? "Not able to save assignment_submission in DB",
@@ -105,8 +111,11 @@ exports.createAssignmentSubmission = (req, res) => {
             });
         }else{
             /// IF AN ERROR OCCURS THEN THE UPLOADED SUBMISSION SHOULD BE DELETED
+            // req.body.submission.forEach(submission=>{
+            //     removeFile(submission);
+            // })
             req.body.submission.forEach(submission=>{
-                removeFile(submission);
+                removeFile(submission.fcs_path);
             })
             console.log(err);
             return res.status(400).json({
@@ -117,22 +126,22 @@ exports.createAssignmentSubmission = (req, res) => {
 }
 
 exports.updateAssignmentSubmission = (req, res) => {
-    if(req?.file?.submission){
-        req.body.submission = []
-        /// HERE WE CHECK IF ASSIGNMENT SUBMISSIONS HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
-        if (req.assignment_submission.submission){
-            req.assignment_submission.submission.forEach(assignment_question_file=>{
-                removeFile(assignment_question_file);
-            })
-        }
-        if(Array.isArray(req.file.submission)){
-            req.file.submission.forEach((f)=>{
-                req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
-            })
-        }else{
-            req.body.submission.push(`/uploads/assignment_submissions/${req.file.submission.newFilename}`)
-        }
-    }
+    // if(req?.file?.submission){
+    //     req.body.submission = []
+    //     /// HERE WE CHECK IF ASSIGNMENT SUBMISSIONS HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
+    //     if (req.assignment_submission.submission){
+    //         req.assignment_submission.submission.forEach(assignment_question_file=>{
+    //             removeFile(assignment_question_file);
+    //         })
+    //     }
+    //     if(Array.isArray(req.file.submission)){
+    //         req.file.submission.forEach((f)=>{
+    //             req.body.submission.push(`/uploads/assignment_submissions/${f.newFilename}`)
+    //         })
+    //     }else{
+    //         req.body.submission.push(`/uploads/assignment_submissions/${req.file.submission.newFilename}`)
+    //     }
+    // }
     AssignmentSubmission.findOneAndUpdate(
         { _id: req.assignment_submission._id },
         { $set: req.body},

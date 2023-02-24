@@ -17,6 +17,11 @@ const subjectSchema = new Schema(
       trim: true,
       default: "",
     },
+    fcs_pic_path: {
+      type:String,
+      trim:true,
+      default:"",
+    },
     credits: {
       type: Number,
       required: true,
@@ -64,8 +69,11 @@ const preDeleteSubject = async (subject, next) => {
   } catch (e) {
     return next(e);
   }
-  if (subject.pic_url) {
-    removeFile(subject.pic_url);
+  // if (subject.pic_url) {
+  //   removeFile(subject.pic_url);
+  // }
+  if (subject.fcs_pic_path) {
+    removeFile(subject.fcs_pic_path);
   }
 };
 

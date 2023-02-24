@@ -63,19 +63,22 @@ exports.getAllSubjectsBySemester = (req, res) => {
 };
 
 exports.createSubject = (req, res, next) => {
-  if (req?.file?.pic_url) {
-    console.log(req.file.pic_url.filepath, req.file.pic_url.newFilename);
-    req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
-  } else {
-    req.body.pic_url = "";
-  }
+  // if (req?.file?.pic_url) {
+  //   console.log(req.file.pic_url.filepath, req.file.pic_url.newFilename);
+  //   req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
+  // } else {
+  //   req.body.pic_url = "";
+  // }
   const subject = new Subject(req.body);
   subject.save((err, subject) => {
     if (err || !subject) {
       console.log(err);
       /// REMOVING SUBJECT PIC URL IF IT EXISTS BECAUSE OF ERROR
-      if (req.body.pic_url) {
-        removeFile(req.body.pic_url);
+      // if (req.body.pic_url) {
+      //   removeFile(req.body.pic_url);
+      // }
+      if (req.body.fcs_pic_path) {
+        removeFile(req.body.fcs_pic_path);
       }
       return res.status(400).json({
         error: "Not able to save subject in DB",
@@ -90,14 +93,14 @@ exports.createSubject = (req, res, next) => {
 };
 
 exports.updateSubject = (req, res) => {
-  if (req?.file?.pic_url) {
-    /// HERE WE CHECK IF SUBJECT HAS PIC_URL AND IF IT DOES THEN WE REMOVE PIC FROM FILE SYSTEM
-    if (req.subject.pic_url) {
-      removeFile(req.subject.pic_url);
-    }
-    console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
-    req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
-  }
+  // if (req?.file?.pic_url) {
+  //   /// HERE WE CHECK IF SUBJECT HAS PIC_URL AND IF IT DOES THEN WE REMOVE PIC FROM FILE SYSTEM
+  //   if (req.subject.pic_url) {
+  //     removeFile(req.subject.pic_url);
+  //   }
+  //   console.log(req.file?.pic_url?.filepath, req.file?.pic_url?.newFilename);
+  //   req.body.pic_url = `/uploads/subjects/${req.file.pic_url.newFilename}`;
+  // }
   Subject.findOneAndUpdate(
     { _id: req.subject._id },
     { $set: req.body },

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const {removeFile} = require("../utilities/remove_file");
+const fileSchema = require("./file_schema");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
@@ -35,7 +36,7 @@ const assignmentSchema = new Schema(
         },
         assignment_question_files: {
             type: [{
-                type: String,
+                type: fileSchema,
             }],
             default: []
         },
@@ -66,7 +67,7 @@ const preDeleteAssignment = async (assignment, next) =>{
     }
     /// DELETE ASSIGNMENT QUESTION FILES IF EXISTS
     assignment.assignment_question_files.forEach((question_file)=>{
-        removeFile(question_file);
+        removeFile(question_file.fcs_path);
     })
 }
 

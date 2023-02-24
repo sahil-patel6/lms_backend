@@ -36,8 +36,6 @@ router.post(
   isSignedIn,
   isAuthenticated,
   isAdmin,
-  setSubjectUploadDir,
-  handleForm,
     check("name")
         .isLength({ min: 3 })
         .withMessage("name should be atleast 3 char long"),
@@ -70,8 +68,6 @@ router.put(
   isSignedIn,
   isAuthenticated,
   isAdmin,
-  setSubjectUploadDir,
-  handleForm,
   updateSubject
 );
 

@@ -34,6 +34,11 @@ const parentSchema = new Schema(
       trim: true,
       default: "",
     },
+    fcs_profile_pic_path: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     fcm_token: {
       type: String,
       trim: true,
@@ -103,9 +108,12 @@ parentSchema.pre("deleteMany", async function (next){
 })
 
 const preDeleteParent = (parent,next)=>{
-    if (parent.profile_pic){
-        removeFile(parent.profile_pic);
-    }
+    // if (parent.profile_pic){
+    //     removeFile(parent.profile_pic);
+    // }
+  if (parent.fcs_profile_pic_path){
+    removeFile(parent.fcs_profile_pic_path)
+  }
 }
 
 module.exports = mongoose.model("Parent", parentSchema);

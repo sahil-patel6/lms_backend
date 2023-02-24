@@ -1,13 +1,7 @@
-const admin = require("firebase-admin");
-
-const serviceAccount = require("./credentials.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const admin = require("./firebase_admin");
 
 const registrationToken =
-  "fC8ZwzPaQaKRLPIl-eNjW3:APA91bGtRDO67CzlId0iUmD1q58knLUZM1lLYu98u_FuUUzU_W3FAAm_Nme4q1W8Eu_orQUH4hsPvfOWgRJMBuY0Q0odxZ8NFlnrQSWnHDl5Cf-6cRaE3E9up2qBJp7h4cUezwEAp5SX";
+  "eqrru9rhQi-nDuf7-fzC98:APA91bEMcqx5NGNjIql6cvbJSMIZKL9NlQf-dJtKTlNWExidOXZCR73Qp3F6GOsnpPuYcgyikY8BLn4BUujix39VBmtnQPp2iavVdvTz2rgKNY7XSSPg_wZxg7o-1rjtL5528N4B7z6G";
 
 const sendNotification = async function (payload) {
   const result = await admin.messaging().send(payload);

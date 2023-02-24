@@ -35,8 +35,6 @@ router.post(
     isSignedIn,
     isAuthenticated,
     isStudent,
-    setAssignmentSubmissionUploadDir,
-    handleForm,
     check("student")
         .isMongoId()
         .withMessage("student should be student Id"),
@@ -64,8 +62,6 @@ router.put(
     isSignedIn,
     isAuthenticated,
     isStudent,
-    setAssignmentSubmissionUploadDir,
-    handleForm,
     updateAssignmentSubmission
 );
 

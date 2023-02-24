@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { removeFile } = require("../utilities/remove_file");
+const fileSchema = require("./file_schema");
 const Schema = mongoose.Schema;
 const { ObjectId } = mongoose.Schema;
 
@@ -28,7 +29,7 @@ const noticeSchema = new Schema(
         },
         files: {
             type: [{
-                type: String,
+                type: fileSchema,
                 required: true,
             }], default: [],
         }
@@ -53,7 +54,7 @@ noticeSchema.pre("deleteMany", async function (next) {
 
 const preDeleteNotice = async (notice, next) => {
     notice.files.forEach((file)=>{
-        removeFile(file);
+        removeFile(file.fcs_path);
     })
 }
 module.exports = mongoose.model("Notice", noticeSchema);

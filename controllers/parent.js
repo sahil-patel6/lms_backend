@@ -1,16 +1,16 @@
 const Parent = require("../models/parent");
 const fs = require("fs");
-const {removeFile} = require("../utilities/remove_file");
+const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
 exports.setParentUploadDir = (req, res, next) => {
   const dir = `${__dirname}/../public/uploads/parents/`;
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, {recursive: true});
+    fs.mkdirSync(dir, { recursive: true });
   }
   req.uploadDir = dir;
   next();
-}
+};
 
 exports.getParentById = (req, res, next, id) => {
   Parent.findById(id).exec((err, parent) => {
@@ -36,27 +36,87 @@ exports.getParent = (req, res) => {
 };
 
 exports.createParent = (req, res) => {
-    if (req?.file?.profile_pic) {
-      console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
-      req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
+  // if (req?.file?.profile_pic) {
+  //   console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
+  //   req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
+  // } else {
+  //   req.body.pic_url = "";
+  // }
+  const parent = new Parent(req.body);
+  parent.save((err, parent) => {
+    if (err || !parent) {
+      console.log(err);
+      // if (req.body.profile_pic) {
+      //   removeFile(req.body.profile_pic);
+      // }
+      if (req.body.fcs_profile_pic_path) {
+        removeFile(req.body.fcs_profile_pic_path);
+      }
+      return res.status(400).json({
+        error: "Not able to save parent in DB",
+      });
     } else {
-      req.body.pic_url = "";
+      agenda.now("send user credentials email", {
+        name: parent.name,
+        email: parent.email,
+        password: req.body.plainPassword,
+      });
+      parent.__v = undefined;
+      parent.createdAt = undefined;
+      parent.updatedAt = undefined;
+      parent.password = undefined;
+      parent.salt = undefined;
+      return res.json(parent);
     }
-    const parent = new Parent(req.body);
-    parent.save((err, parent) => {
+  });
+};
+
+exports.updateParent = (req, res) => {
+  // if (req?.file?.profile_pic) {
+  //   /// HERE WE CHECK IF STUDENT HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
+  //   if (req.parent.profile_pic){
+  //     removeFile(req.parent.profile_pic);
+  //   }
+  //     console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
+  //     req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
+  //   }
+  Parent.findOneAndUpdate(
+    { _id: req.parent._id },
+    { $set: req.body },
+    { new: true }
+  )
+    .select("-createdAt -updatedAt -__v")
+    .exec((err, parent) => {
       if (err || !parent) {
         console.log(err);
-        if (req.body.profile_pic){
-          removeFile(req.body.profile_pic);
-        }
         return res.status(400).json({
-          error: "Not able to save parent in DB",
+          error: "Update failed",
+        });
+      }
+      if (
+        req.body.newPassword &&
+        req.body.newPassword.length >= 8 &&
+        req.body.currentPassword
+      ) {
+        // if(fields.plainPassword){
+        if (!parent.authenticate(req.body.currentPassword)) {
+          return res.status(400).json({
+            error: "Current password is incorrect",
+          });
+        }
+        parent.updatePassword(req.body.newPassword, (err, result) => {
+          if (err || result.modifiedCount === 0) {
+            console.log("Failed to update parent password: ", err);
+            return res.status(400).json({
+              error: "Update failed",
+            });
+          } else {
+            parent.password = undefined;
+            parent.salt = undefined;
+            return res.json(parent);
+          }
         });
       } else {
-        agenda.now("send user credentials email",{name:parent.name,email:parent.email,password:req.body.plainPassword})
-        parent.__v = undefined;
-        parent.createdAt = undefined;
-        parent.updatedAt = undefined;
         parent.password = undefined;
         parent.salt = undefined;
         return res.json(parent);
@@ -64,63 +124,10 @@ exports.createParent = (req, res) => {
     });
 };
 
-exports.updateParent = (req, res) => {
-  if (req?.file?.profile_pic) {
-    /// HERE WE CHECK IF STUDENT HAS PROFILE PIC AND IF IT DOES THEN WE REMOVE PROFILE PIC FROM FILE SYSTEM
-    if (req.parent.profile_pic){
-      removeFile(req.parent.profile_pic);
-    }
-      console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
-      req.body.profile_pic = `/uploads/parents/${req.file.profile_pic.newFilename}`;
-    }
-    Parent.findOneAndUpdate(
-      { _id: req.parent._id },
-      { $set: req.body },
-      { new: true })
-        .select("-createdAt -updatedAt -__v")
-        .exec((err, parent) => {
-          if (err || !parent) {
-            console.log(err);
-            return res.status(400).json({
-              error: "Update failed",
-            });
-          }
-          if (
-            req.body.newPassword &&
-            req.body.newPassword.length >= 8 &&
-            req.body.currentPassword
-          ) {
-            // if(fields.plainPassword){
-            if (!parent.authenticate(req.body.currentPassword)) {
-              return res.status(400).json({
-                error: "Current password is incorrect",
-              });
-            }
-            parent.updatePassword(req.body.newPassword, (err, result) => {
-              if (err || result.modifiedCount === 0) {
-                console.log("Failed to update parent password: ", err);
-                return res.status(400).json({
-                  error: "Update failed",
-                });
-              } else {
-                parent.password = undefined;
-                parent.salt = undefined;
-                return res.json(parent);
-              }
-            });
-          } else {
-            parent.password = undefined;
-            parent.salt = undefined;
-            return res.json(parent);
-          }
-        }
-      );
-};
-
 exports.deleteParent = (req, res) => {
   Parent.deleteOne({ _id: req.parent._id }, (err, op) => {
     if (err || op.deletedCount === 0) {
-      console.log(err)
+      console.log(err);
       return res.status(400).json({
         error: "Failed to delete parent",
       });

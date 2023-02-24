@@ -24,7 +24,6 @@ exports.admin_signin = (admin, res) => {
         error: "admin Email Doesn't exist",
       });
     }
-    console.log(admin)
     if (!admin.authenticate(plainPassword)) {
       return res.status(401).json({
         error: "Email and password do not match",
@@ -42,7 +41,7 @@ exports.admin_signin = (admin, res) => {
     admin.__v = undefined;
     return res.status(200).json({
       token,
-      admin
+      ...admin._doc
     });
   });
 };
@@ -79,7 +78,7 @@ exports.student_signin = (req, res) => {
     student.__v = undefined;
     return res.status(200).json({
       token,
-      student,
+      ...student._doc,
     });
   });
 };
@@ -120,7 +119,7 @@ exports.teacher_signin = (req, res) => {
     teacher.__v = undefined;
     return res.status(200).json({
       token,
-      teacher,
+      ...teacher._doc,
     });
   });
 };
@@ -162,7 +161,7 @@ exports.parent_signin = (req, res) => {
     parent.__v = undefined;
     return res.status(200).json({
       token,
-      parent,
+      ...parent._doc,
     });
   });
 };

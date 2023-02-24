@@ -53,29 +53,32 @@ exports.getAllAssignmentsBySubject = (req, res) => {
 };
 
 exports.createAssignment = (req, res, next) => {
-  if (req?.file?.assignment_question_files) {
-    req.body.assignment_question_files = [];
-    if (Array.isArray(req.file.assignment_question_files)) {
-      req.file.assignment_question_files.forEach((f) => {
-        req.body.assignment_question_files.push(
-          `/uploads/assignments/${f.newFilename}`
-        );
-      });
-    } else {
-      req.body.assignment_question_files.push(
-        `/uploads/assignments/${req.file.assignment_question_files.newFilename}`
-      );
-    }
-  } else {
-    req.body.assignment_question_files = [];
-  }
+  // if (req?.file?.assignment_question_files) {
+  //   req.body.assignment_question_files = [];
+  //   if (Array.isArray(req.file.assignment_question_files)) {
+  //     req.file.assignment_question_files.forEach((f) => {
+  //       req.body.assignment_question_files.push(
+  //         `/uploads/assignments/${f.newFilename}`
+  //       );
+  //     });
+  //   } else {
+  //     req.body.assignment_question_files.push(
+  //       `/uploads/assignments/${req.file.assignment_question_files.newFilename}`
+  //     );
+  //   }
+  // } else {
+  //   req.body.assignment_question_files = [];
+  // }
   const assignment = new Assignment(req.body);
   assignment.save(async (err, assignment) => {
     if (err || !assignment) {
       console.log(err);
       /// REMOVING ASSIGNMENT QUESTION FILES IF IT EXISTED BECAUSE OF ERROR
+      // req.body.assignment_question_files.forEach((question) => {
+      //   removeFile(question);
+      // });
       req.body.assignment_question_files.forEach((question) => {
-        removeFile(question);
+        removeFile(question.fcs_path);
       });
       return res.status(400).json({
         error: "Not able to save assignment in DB",
@@ -96,28 +99,28 @@ exports.createAssignment = (req, res, next) => {
 };
 
 exports.updateAssignment = (req, res) => {
-  if (req?.file?.assignment_question_files) {
-    req.body.assignment_question_files = [];
-    /// HERE WE CHECK IF ASSIGNMENT HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
-    if (req.assignment.assignment_question_files) {
-      req.assignment.assignment_question_files.forEach(
-        (assignment_question_file) => {
-          removeFile(assignment_question_file);
-        }
-      );
-    }
-    if (Array.isArray(req.file.assignment_question_files)) {
-      req.file.assignment_question_files.forEach((f) => {
-        req.body.assignment_question_files.push(
-          `/uploads/assignments/${f.newFilename}`
-        );
-      });
-    } else {
-      req.body.assignment_question_files.push(
-        `/uploads/assignments/${req.file.assignment_question_files.newFilename}`
-      );
-    }
-  }
+  // if (req?.file?.assignment_question_files) {
+  //   req.body.assignment_question_files = [];
+  //   /// HERE WE CHECK IF ASSIGNMENT HAS QUESTION FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
+  //   if (req.assignment.assignment_question_files) {
+  //     req.assignment.assignment_question_files.forEach(
+  //       (assignment_question_file) => {
+  //         removeFile(assignment_question_file);
+  //       }
+  //     );
+  //   }
+  //   if (Array.isArray(req.file.assignment_question_files)) {
+  //     req.file.assignment_question_files.forEach((f) => {
+  //       req.body.assignment_question_files.push(
+  //         `/uploads/assignments/${f.newFilename}`
+  //       );
+  //     });
+  //   } else {
+  //     req.body.assignment_question_files.push(
+  //       `/uploads/assignments/${req.file.assignment_question_files.newFilename}`
+  //     );
+  //   }
+  // }
   Assignment.findOneAndUpdate(
     { _id: req.assignment._id },
     { $set: req.body },

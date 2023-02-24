@@ -29,7 +29,7 @@ router.post(
   [
     check("email").isEmail().withMessage("Email must be valid"),
     check("plainPassword")
-      .isLength({ min: 5 })
+      .isLength({ min: 8 })
       .withMessage("Password should be atleast 8 char long"),
   ],
   validateAllErrors,

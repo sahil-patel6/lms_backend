@@ -44,6 +44,11 @@ const studentSchema = new Schema(
             trim: true,
             default: ""
         },
+        fcs_profile_pic_path: {
+          type: String,
+          trim: true,
+          default: "",
+        },
         fcm_token: {
             type: String,
             trim: true,
@@ -121,8 +126,11 @@ const preDeleteStudent = async (student,next) =>{
     } catch (e) {
         return next(e);
     }
-    if (student.profile_pic){
-        removeFile(student.profile_pic)
+    // if (student.profile_pic){
+    //     removeFile(student.profile_pic)
+    // }
+    if (student.fcs_profile_pic_path){
+        removeFile(student.fcs_profile_pic_path)
     }
 }
 module.exports = mongoose.model("Student", studentSchema);

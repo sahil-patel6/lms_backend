@@ -35,8 +35,6 @@ router.post(
     isSignedIn,
     isAuthenticated,
     isTeacher,
-    setResourceUploadDir,
-    handleForm,
     check("title")
         .isLength({ min: 3 })
         .withMessage("title should be atleast 3 char long"),
@@ -69,8 +67,6 @@ router.put(
     isSignedIn,
     isAuthenticated,
     isTeacher,
-    setResourceUploadDir,
-    handleForm,
     updateResource
 );
 
