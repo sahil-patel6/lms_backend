@@ -6,6 +6,7 @@ module.exports = function (agenda) {
   agenda.define("send assignment created notification", async (job) => {
     try {
       let assignment = job.attrs.data;
+      console.log(assignment)
       assignment = await Assignment.findById(assignment._id).populate({
         path: "subject",
         select: "-__v -createdAt -updatedAt",
@@ -25,14 +26,12 @@ module.exports = function (agenda) {
         sendNotification({
           notification: {
             title: `New Assigment Uploaded in ${assignment.subject.name}`,
-            body: `Assignment Title: ${assignment.title}\n
-              Assignment Description: ${assignment.description}\n
-              Assignment Due Date: ${assignment.dueDate.toLocaleString()}`,
+            body: `Assignment Title: ${assignment.title}\nAssignment Description: ${assignment.description}\nAssignment Due Date: ${assignment.dueDate.toLocaleString()}`,
           },
           data: {
-            assignment_id: assignment._id,
+            assignment_id: assignment._id.toString(),
           },
-          token: [students.map((student) => student.fcm_token)],
+          tokens: registration_tokens,
         });
       }else{
         console.log("NO FCM TOKENS TO SEND NOTIFICATIONS TO.....")
