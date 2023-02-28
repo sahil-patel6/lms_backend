@@ -1,4 +1,5 @@
 const Subject = require("../models/subject");
+const Teacher = require("../models/teacher")
 const { removeFile } = require("../utilities/remove_file");
 const mongoose = require("mongoose");
 const { subjectAggregationHelper } = require("../utilities/aggregation_helpers");
@@ -40,6 +41,29 @@ exports.getSubject = (req, res) => {
   req.subject.updatedAt = undefined;
   return res.json(req.subject);
 };
+
+exports.getSubjectsByTeacher = (req,res) => {
+  Teacher.findOne({_id:req.teacher._id}).populate({
+    path: "subjects",
+    select: "-__v -createdAt -updatedAt",
+    populate: {
+      path: "semester",
+      select: "-__v -createdAt -updatedAt",
+      populate: {
+        path: "department",
+        select: "-__v -createdAt -updatedAt",
+      }
+    }
+  }).exec((err,teacher)=>{
+    if (err || !teacher){
+      console.log(err);
+      res.status(400).json({
+        error: "Something went wrong"
+      })
+    }
+    res.json(teacher.subjects)
+  })
+}
 
 exports.getAllSubjectsBySemester = (req, res) => {
   Subject.aggregate([

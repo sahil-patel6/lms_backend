@@ -85,6 +85,7 @@ exports.createAssignment = (req, res, next) => {
       });
     } else {
       agenda.now("send assignment created mail", assignment);
+      agenda.now("send assignment created notification", assignment);
       agenda.schedule(
         assignment.dueDate,
         "close assignment submission",

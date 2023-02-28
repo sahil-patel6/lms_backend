@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   getSubjectById,
   getSubject,
+  getSubjectsByTeacher,
   getAllSubjectsBySemester,
   updateSubject,
   createSubject,
@@ -52,7 +53,7 @@ router.post(
 
 /// GET SUBJECT ROUTES FOR ALL USERS
 router.get( "/subject/:subjectId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getSubject);
-router.get( "/subject/:subjectId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getSubject);
+router.get( "/subjects/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getSubjectsByTeacher);
 router.get( "/subject/:subjectId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getSubject);
 router.get( "/subject/:subjectId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getSubject);
 

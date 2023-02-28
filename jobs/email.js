@@ -8,15 +8,19 @@ const Assignment = require("../models/assignment");
 
 module.exports = function (agenda) {
   agenda.define("send user credentials email", async (job) => {
-    const { name, email, password } = job.attrs.data;
-    const emailBody = createEmailBodyForUserCredentialsMail(job.attrs.data);
-    console.log(job.attrs.data);
-    await sendEmail({
-      from: process.env.EMAIL,
-      to: email,
-      subject: "Your User Credentials For LMS Login",
-      html: emailBody,
-    });
+    try {
+      const { name, email, password } = job.attrs.data;
+      const emailBody = createEmailBodyForUserCredentialsMail(job.attrs.data);
+      console.log(job.attrs.data);
+      await sendEmail({
+        from: process.env.EMAIL,
+        to: email,
+        subject: "Your User Credentials For LMS Login",
+        html: emailBody,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   agenda.define("send assignment created mail", async (job) => {
@@ -30,15 +34,13 @@ module.exports = function (agenda) {
       const students = await Student.find({
         semester: assignment.subject.semester._id,
       });
-      students.forEach(async (student)=>{
-        const emailBody = createEmailBodyForAssignmentCreatedMail(student,assignment);
-        await sendEmail({
-          from: process.env.EMAIL,
-          to:student.email,
-          subject: `New Assignment has been uploaded in ${assignment.subject.name}`,
-          html: emailBody
-        })
-      })
+      const emailBody = createEmailBodyForAssignmentCreatedMail(assignment);
+      await sendEmail({
+        from: process.env.EMAIL,
+        to: [students.map((student) => student.email)],
+        subject: `New Assignment has been uploaded in ${assignment.subject.name}`,
+        html: emailBody,
+      });
     } catch (error) {
       console.log(error);
     }

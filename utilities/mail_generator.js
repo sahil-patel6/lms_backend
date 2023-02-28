@@ -29,12 +29,12 @@ exports.createEmailBodyForUserCredentialsMail = (data)=>{
    return emailBody;
 }  
 
-exports.createEmailBodyForAssignmentCreatedMail = (student,assignment)=>{
+exports.createEmailBodyForAssignmentCreatedMail = (assignment)=>{
     const emailGen = {
         body: {
             greeting: "Hello",
             signature: "Sincerely",
-            name: student.name,
+            name: "There",
             intro: [
                 `New Assignment has been uploaded in ${assignment.subject.name}`,
                 `Assignment Title: ${assignment.title}`,
