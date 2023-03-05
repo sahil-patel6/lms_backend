@@ -61,6 +61,7 @@ exports.getSubjectsByTeacher = (req,res) => {
         error: "Something went wrong"
       })
     }
+    console.log(teacher.subjects);
     res.json(teacher.subjects)
   })
 }
