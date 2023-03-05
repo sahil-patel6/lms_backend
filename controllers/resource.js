@@ -13,8 +13,7 @@ exports.setResourceUploadDir = (req, res, next)=>{
 }
 
 exports.getResourceById = (req, res, next, id) => {
-    Resource.findById(id)        
-        .populate("subject","_id name")
+    Resource.findById(id)
         .exec((err, resource) => {
             if (err || !resource) {
                 return res.status(400).json({
@@ -35,7 +34,6 @@ exports.getResource = (req, res) => {
 
 exports.getAllResourcesBySubject = (req, res) => {
     Resource.find({ subject: req.params.subjectId })
-        .populate("subject","_id name")
         .select("-createdAt -updatedAt -__v")
         .exec((err, resources) => {
             if (err || !resources) {
@@ -46,7 +44,7 @@ exports.getAllResourcesBySubject = (req, res) => {
                         err,
                 });
             } else {
-                return res.json({resources});
+                return res.json(resources);
             }
         });
 };
@@ -100,7 +98,6 @@ exports.updateResource = (req, res) => {
         { _id: req.resource._id },
         { $set: req.body},
         { new: true })
-        .populate("subject","_id name")
         .select("-createdAt -updatedAt -__v")
         .exec((err, resource) => {
                 if (err || !resource) {
