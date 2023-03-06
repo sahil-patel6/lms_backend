@@ -12,7 +12,7 @@ exports.removeFile = async (path) => {
     const file = await admin.storage().bucket().file(path);
     await file.delete();
     console.log("Successfully deleted:",path)
-} catch (error) {
+  } catch (error) {
     console.log(error);
   }
 };

@@ -37,14 +37,14 @@ exports.getNoticeBySemester = (req, res) => {
   Notice.findOne({ semester: req.params.semesterId })
     .populate("semester", "_id name")
     .select("-createdAt -updatedAt -__v")
-    .exec((err, notice) => {
-      if (err || !notice) {
+    .exec((err, notices) => {
+      if (err || !notices) {
         console.log(err);
         return res.status(400).json({
-          error: "Notice Not Found",
+          error: "Notices Not Found",
         });
       } else {
-        return res.json(notice);
+        return res.json(notices);
       }
     });
 };

@@ -24,6 +24,11 @@ const parentSchema = new Schema(
       type: String,
       default: "",
     },
+    bio: {
+        type: String,
+        trim: true,
+        default: ""
+    },
     address: {
       type: String,
       trim: true,
