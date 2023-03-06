@@ -155,13 +155,17 @@ exports.deleteAssignment = (req, res) => {
   /// DELETE ASSIGNMENT
   Assignment.deleteOne(
     { _id: req.assignment._id },
-    (err, removedAssignment) => {
+    async (err, removedAssignment) =>  {
       if (err) {
         console.log(err);
         return res.status(400).json({
           error: "Failed to delete Assignment",
         });
       }
+      await agenda.cancel({
+        name: "close assignment submission",
+        "data._id": req.assignment._id,
+      });
       return res.json({
         message: `${req.assignment.title} Assignment Deleted Successfully`,
       });
