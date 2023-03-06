@@ -47,7 +47,7 @@ exports.getAllAssignmentsBySubject = (req, res) => {
             err,
         });
       } else {
-        return res.json({ assignments });
+        return res.json( assignments );
       }
     });
 };
