@@ -1,4 +1,5 @@
 const  Mailgen = require('mailgen');
+const moment = require("moment")
 
 var mailGenerator = new Mailgen({
     theme: 'default',
@@ -30,6 +31,14 @@ exports.createEmailBodyForUserCredentialsMail = (data)=>{
 }  
 
 exports.createEmailBodyForAssignmentCreatedMail = (assignment)=>{
+    let utcDate = moment(assignment.dueDate);
+      // Convert the UTC date into IST
+      let istDate = moment(assignment.dueDate).tz("Asia/Kolkata");
+
+      console.log("Using Moment.js:");
+      console.log(`UTC date (iso): ${utcDate.format('llll')}`);
+      console.log(`IST date (iso): ${istDate.format('llll')}`);
+      
     const emailGen = {
         body: {
             greeting: "Hello",
@@ -39,7 +48,7 @@ exports.createEmailBodyForAssignmentCreatedMail = (assignment)=>{
                 `New Assignment has been uploaded in ${assignment.subject.name}`,
                 `Assignment Title: ${assignment.title}`,
                 `Assignment Description: ${assignment.description}`,
-                `Assignment Due Date: ${assignment.dueDate.toLocaleString()}`
+                `Assignment Due Date: ${istDate.format('llll')}`
             ],
             outro: 'Need help, or have questions? Just reply to this email, we\'d love to help.'
         }
