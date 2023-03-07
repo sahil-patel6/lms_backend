@@ -35,6 +35,7 @@ module.exports = function (agenda) {
         semester: assignment.subject.semester._id,
       });
       const emailBody = createEmailBodyForAssignmentCreatedMail(assignment);
+      console.log([students.map((student) => student.email)]);
       await sendEmail({
         from: process.env.EMAIL,
         to: [students.map((student) => student.email)],
