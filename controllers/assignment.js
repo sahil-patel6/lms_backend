@@ -15,7 +15,6 @@ exports.setAssignmentUploadDir = (req, res, next) => {
 
 exports.getAssignmentById = (req, res, next, id) => {
   Assignment.findById(id)
-    .populate("subject", "_id name")
     .exec((err, assignment) => {
       if (err || !assignment) {
         return res.status(400).json({
@@ -36,7 +35,6 @@ exports.getAssignment = (req, res) => {
 
 exports.getAllAssignmentsBySubject = (req, res) => {
   Assignment.find({ subject: req.params.subjectId })
-    .populate("subject", "_id name")
     .select("-createdAt -updatedAt -__v")
     .exec((err, assignments) => {
       if (err || !assignments) {
@@ -127,7 +125,6 @@ exports.updateAssignment = (req, res) => {
     { $set: req.body },
     { new: true }
   )
-    .populate("subject", "_id name")
     .select("-createdAt -updatedAt -__v")
     .exec(async (err, assignment) => {
       if (err || !assignment) {
