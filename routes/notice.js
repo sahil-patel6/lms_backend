@@ -9,7 +9,6 @@ const {
     updateNotice,
     createNotice,
     deleteNotice,
-    setNoticeUploadDir,
 } = require("../controllers/notice");
 
 const { checkIfSemesterExists } = require("../utilities/middlewares")
@@ -17,7 +16,6 @@ const { checkIfSemesterExists } = require("../utilities/middlewares")
 const { isSignedIn, isAuthenticated, isTeacher, isStudent, isParent } = require("../controllers/auth");
 const { validateAllErrors } = require("../utilities/error")
 const { check } = require("express-validator");
-const { handleForm } = require("../utilities/form_handler");
 const { getTeacherById } = require("../controllers/teacher");
 const { getStudentById } = require("../controllers/student");
 const { getParentById } = require("../controllers/parent");
