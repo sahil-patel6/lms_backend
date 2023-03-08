@@ -4,7 +4,7 @@ const moment = require("moment")
 var mailGenerator = new Mailgen({
     theme: 'default',
     product: {
-        name: 'LMS',
+        name: 'LearnSpot',
         copyright: 'Copyright © 2023 LMS. All rights reserved.',
         link: "https://www.google.com"
     }
@@ -18,7 +18,7 @@ exports.createEmailBodyForUserCredentialsMail = (data)=>{
             signature: "Sincerely",
             name: name,
             intro: [
-                'Welcome to LMS! We\'re very excited to have you on board.',
+                'Welcome to LearnSpot! We\'re very excited to have you on board.',
                 'Please do not share your credentials with anyone.\nHere are your credentials:',
                 `Your Email: <b>${email}</b>`,
                 `Your Password: <b>${password}</b>`,

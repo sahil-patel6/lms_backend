@@ -34,7 +34,7 @@ exports.getNotice = (req, res) => {
 };
 
 exports.getNoticeBySemester = (req, res) => {
-  Notice.findOne({ semester: req.params.semesterId })
+  Notice.find({ semester: req.params.semesterId })
     .populate("semester", "_id name")
     .select("-createdAt -updatedAt -__v")
     .exec((err, notices) => {
