@@ -25,7 +25,7 @@ const noticeSchema = new Schema(
         },
         date: {
             type:Date,
-            default: Date.now(),
+            default: Date.now,
         },
         files: {
             type: [{
