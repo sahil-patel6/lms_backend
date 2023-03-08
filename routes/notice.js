@@ -54,9 +54,9 @@ router.get("/notice/:noticeId/student/:studentId", isSignedIn, isAuthenticated, 
 router.get("/notice/:noticeId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getNotice);
 
 /// GET NOTICE BY SEMESTER ID ROUTES FOR ALL USERS
-router.get("/notice/semester/:semesterId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getNoticeBySemester);
-router.get("/notice/semester/:semesterId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getNoticeBySemester);
-router.get("/notice/semester/:semesterId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getNoticeBySemester);
+router.get("/notices/semester/:semesterId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getNoticeBySemester);
+router.get("/notices/semester/:semesterId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getNoticeBySemester);
+router.get("/notices/semester/:semesterId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getNoticeBySemester);
 
 /// UPDATE ROUTE FOR NOTICE
 router.put(
