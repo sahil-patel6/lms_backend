@@ -14,7 +14,14 @@ exports.setNoticeUploadDir = (req, res, next) => {
 
 exports.getNoticeById = (req, res, next, id) => {
   Notice.findById(id)
-    .populate("semester", "_id name")
+  .populate({
+    path: "semester",
+    select: "-__v -createdAt -updatedAt",
+    populate: {
+      path: "department",
+      select: "-__v -createdAt -updatedAt",
+    },
+  })
     .exec((err, notice) => {
       if (err || !notice) {
         return res.status(400).json({
@@ -35,7 +42,14 @@ exports.getNotice = (req, res) => {
 
 exports.getNoticeBySemester = (req, res) => {
   Notice.find({ semester: req.params.semesterId })
-    .populate("semester", "_id name")
+  .populate({
+    path: "semester",
+    select: "-__v -createdAt -updatedAt",
+    populate: {
+      path: "department",
+      select: "-__v -createdAt -updatedAt",
+    },
+  })
     .select("-createdAt -updatedAt -__v")
     .exec((err, notices) => {
       if (err || !notices) {
@@ -50,25 +64,28 @@ exports.getNoticeBySemester = (req, res) => {
 };
 
 exports.createNotice = (req, res) => {
-  if (req?.file?.files) {
-    req.body.files = [];
-    if (Array.isArray(req.file.files)) {
-      req.file.files.forEach((f) => {
-        req.body.files.push(`/uploads/notices/${f.newFilename}`);
-      });
-    } else {
-      req.body.files.push(`/uploads/notices/${req.file.files.newFilename}`);
-    }
-  } else {
-    req.body.files = [];
-  }
+  // if (req?.file?.files) {
+  //   req.body.files = [];
+  //   if (Array.isArray(req.file.files)) {
+  //     req.file.files.forEach((f) => {
+  //       req.body.files.push(`/uploads/notices/${f.newFilename}`);
+  //     });
+  //   } else {
+  //     req.body.files.push(`/uploads/notices/${req.file.files.newFilename}`);
+  //   }
+  // } else {
+  //   req.body.files = [];
+  // }
   const notice = new Notice(req.body);
   notice.save((err, notice) => {
     if (err || !notice) {
       console.log(err);
-      /// REMOVING FILES IF IT EXISTED BECAUSE OF ERROR
+      /// REMOVING FILES IF IT EXISTS BECAUSE OF ERROR
+      // req.body.files.forEach(file=>{
+      //     removeFile(file);
+      // })
       req.body.files.forEach((file) => {
-        removeFile(file);
+        removeFile(file.fcs_path);
       });
       return res.status(400).json({
         error: "Not able to save notice in DB",
@@ -83,28 +100,35 @@ exports.createNotice = (req, res) => {
 };
 
 exports.updateNotice = (req, res) => {
-  if (req?.file?.files) {
-    req.body.files = [];
-    /// HERE WE CHECK IF NOTICE HAS FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
-    if (req.notice.files) {
-      req.notice.files.forEach((file) => {
-        removeFile(file);
-      });
-    }
-    if (Array.isArray(req.file.files)) {
-      req.file.files.forEach((f) => {
-        req.body.files.push(`/uploads/notices/${f.newFilename}`);
-      });
-    } else {
-      req.body.files.push(`/uploads/notices/${req.file.files.newFilename}`);
-    }
-  }
+  // if (req?.file?.files) {
+  //   req.body.files = [];
+  //   /// HERE WE CHECK IF NOTICE HAS FILES AND IF IT DOES THEN WE REMOVE THEM FROM FILE SYSTEM
+  //   if (req.notice.files) {
+  //     req.notice.files.forEach((file) => {
+  //       removeFile(file);
+  //     });
+  //   }
+  //   if (Array.isArray(req.file.files)) {
+  //     req.file.files.forEach((f) => {
+  //       req.body.files.push(`/uploads/notices/${f.newFilename}`);
+  //     });
+  //   } else {
+  //     req.body.files.push(`/uploads/notices/${req.file.files.newFilename}`);
+  //   }
+  // }
   Notice.findOneAndUpdate(
     { _id: req.notice._id },
     { $set: req.body },
     { new: true }
   )
-    .populate("semester", "_id name")
+    .populate({
+      path: "semester",
+      select: "-__v -createdAt -updatedAt",
+      populate: {
+        path: "department",
+        select: "-__v -createdAt -updatedAt",
+      },
+    })
     .select("-createdAt -updatedAt -__v")
     .exec((err, notice) => {
       if (err || !notice) {
