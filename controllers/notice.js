@@ -14,14 +14,6 @@ exports.setNoticeUploadDir = (req, res, next) => {
 
 exports.getNoticeById = (req, res, next, id) => {
   Notice.findById(id)
-  .populate({
-    path: "semester",
-    select: "-__v -createdAt -updatedAt",
-    populate: {
-      path: "department",
-      select: "-__v -createdAt -updatedAt",
-    },
-  })
     .exec((err, notice) => {
       if (err || !notice) {
         return res.status(400).json({
@@ -42,14 +34,6 @@ exports.getNotice = (req, res) => {
 
 exports.getNoticeBySemester = (req, res) => {
   Notice.find({ semester: req.params.semesterId })
-  .populate({
-    path: "semester",
-    select: "-__v -createdAt -updatedAt",
-    populate: {
-      path: "department",
-      select: "-__v -createdAt -updatedAt",
-    },
-  })
     .select("-createdAt -updatedAt -__v")
     .exec((err, notices) => {
       if (err || !notices) {
@@ -121,14 +105,6 @@ exports.updateNotice = (req, res) => {
     { $set: req.body },
     { new: true }
   )
-    .populate({
-      path: "semester",
-      select: "-__v -createdAt -updatedAt",
-      populate: {
-        path: "department",
-        select: "-__v -createdAt -updatedAt",
-      },
-    })
     .select("-createdAt -updatedAt -__v")
     .exec((err, notice) => {
       if (err || !notice) {
