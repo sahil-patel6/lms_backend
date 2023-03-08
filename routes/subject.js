@@ -10,7 +10,7 @@ const {
   updateSubject,
   createSubject,
   deleteSubject,
-  setSubjectUploadDir,
+  getSubjectsByStudent
 } = require("../controllers/subject");
 
 const {checkIfSemesterExists} = require("../utilities/middlewares")
@@ -19,7 +19,6 @@ const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = 
 const {getAdminById} =  require("../controllers/admin");
 const {validateAllErrors} = require("../utilities/error")
 const { check } = require("express-validator");
-const {handleForm} = require("../utilities/form_handler");
 const {getTeacherById} = require("../controllers/teacher");
 const {getStudentById} = require("../controllers/student");
 const {getParentById} = require("../controllers/parent");
@@ -53,7 +52,9 @@ router.post(
 
 /// GET SUBJECT ROUTES FOR ALL USERS
 router.get( "/subject/:subjectId/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getSubject);
+router.get( "/subject/:subjectId/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getSubject);
 router.get( "/subjects/teacher/:teacherId", isSignedIn, isAuthenticated, isTeacher, getSubjectsByTeacher);
+router.get( "/subjects/student/:studentId", isSignedIn, isAuthenticated, isStudent, getSubjectsByStudent);
 router.get( "/subject/:subjectId/student/:studentId", isSignedIn, isAuthenticated, isStudent, getSubject);
 router.get( "/subject/:subjectId/parent/:parentId", isSignedIn, isAuthenticated, isParent, getSubject);
 

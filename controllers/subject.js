@@ -1,8 +1,11 @@
 const Subject = require("../models/subject");
-const Teacher = require("../models/teacher")
+const Teacher = require("../models/teacher");
+const Student = require("../models/student");
 const { removeFile } = require("../utilities/remove_file");
 const mongoose = require("mongoose");
-const { subjectAggregationHelper } = require("../utilities/aggregation_helpers");
+const {
+  subjectAggregationHelper,
+} = require("../utilities/aggregation_helpers");
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.setSubjectUploadDir = (req, res, next) => {
@@ -42,29 +45,60 @@ exports.getSubject = (req, res) => {
   return res.json(req.subject);
 };
 
-exports.getSubjectsByTeacher = (req,res) => {
-  Teacher.findOne({_id:req.teacher._id}).populate({
-    path: "subjects",
-    select: "-__v -createdAt -updatedAt",
-    populate: {
-      path: "semester",
+exports.getSubjectsByTeacher = (req, res) => {
+  Teacher.findOne({ _id: req.teacher._id })
+    .populate({
+      path: "subjects",
       select: "-__v -createdAt -updatedAt",
       populate: {
-        path: "department",
+        path: "semester",
         select: "-__v -createdAt -updatedAt",
+        populate: {
+          path: "department",
+          select: "-__v -createdAt -updatedAt",
+        },
+      },
+    })
+    .exec((err, teacher) => {
+      if (err || !teacher) {
+        console.log(err);
+        res.status(400).json({
+          error: "Something went wrong",
+        });
       }
-    }
-  }).exec((err,teacher)=>{
-    if (err || !teacher){
+      res.json(teacher.subjects);
+    });
+};
+
+exports.getSubjectsByStudent = (req, res) => {
+  Student.findOne({ _id: req.student._id }).exec((err, student) => {
+    if (err || !student) {
       console.log(err);
       res.status(400).json({
-        error: "Something went wrong"
-      })
+        error: "Something went wrong",
+      });
     }
-    console.log(teacher.subjects);
-    res.json(teacher.subjects)
-  })
-}
+    Subject.find({ semester: student.semester })
+      .populate({
+        path: "semester",
+        select: "-__v -createdAt -updatedAt",
+        populate: {
+          path: "department",
+          select: "-__v -createdAt -updatedAt",
+        },
+      })
+      .select("-__v -createdAt -updatedAt")
+      .exec((err, subjects) => {
+        if (err || !subjects) {
+          console.log(err);
+          res.status(400).json({
+            error: "Something went wrong",
+          });
+        }
+        res.json(subjects);
+      });
+  });
+};
 
 exports.getAllSubjectsBySemester = (req, res) => {
   Subject.aggregate([
