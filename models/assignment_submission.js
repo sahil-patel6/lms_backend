@@ -22,6 +22,10 @@ const assignmentSubmissionSchema = new Schema(
       type: ObjectId,
       ref: "Assignment",
     },
+    submission_date: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true }
 );
@@ -30,7 +34,6 @@ assignmentSubmissionSchema.pre("save", async function (next) {
   try {
     const Assignment = require("./assignment");
     const assignment = await Assignment.findOne({ _id: this.assignment });
-    console.log(assignment);
     if (!assignment.isSubmissionAllowed) {
       throw new Error("Submission is not allowed");
     }

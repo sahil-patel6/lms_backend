@@ -9,7 +9,6 @@ const {
     updateAssignmentSubmission,
     createAssignmentSubmission,
     deleteAssignmentSubmission,
-    setAssignmentSubmissionUploadDir,
 } = require("../controllers/assignment_submission");
 
 const {checkIfAssignmentAndStudentExistsAndAreValid} = require("../utilities/middlewares")
