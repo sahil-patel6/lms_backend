@@ -3,13 +3,13 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  getAttendance,
-  getAttendanceById,
-  attendanceQueryHandler,
-  updateAttendance,
-  createAttendance,
-  deleteAttendance,
-} = require("../controllers/attendance");
+  getAttendanceSession,
+  getAttendanceSessionById,
+  attendanceSessionQueryHandler,
+  updateAttendanceSession,
+  createAttendanceSession,
+  deleteAttendanceSession,
+} = require("../controllers/attendance_session");
 
 const {
   isSignedIn,
@@ -24,36 +24,42 @@ const { getTeacherById } = require("../controllers/teacher");
 const { getStudentById } = require("../controllers/student");
 const { getParentById } = require("../controllers/parent");
 
-router.param("attendanceId",getAttendanceById);
+router.param("attendanceSessionId", getAttendanceSessionById);
 router.param("teacherId", getTeacherById);
 router.param("studentId", getStudentById);
 router.param("parentId", getParentById);
 
 /// CREATE ATTENDANCE ROUTE
 router.post(
-  "/attendance/create/teacher/:teacherId",
+  "/attendance_session/create/teacher/:teacherId",
   isSignedIn,
   isAuthenticated,
   isTeacher,
-  check("attendance.*.student")
-    .isMongoId()
-    .withMessage("Student should be a student ID"),
-  check("attendance.*.subject")
+  check("subject")
     .isMongoId()
     .withMessage("Subject should be a subject ID"),
-  check("attendance.*.present")
+    check("semester")
+      .isMongoId()
+      .withMessage("Semester should be a semester ID"),
+  check("start_time")
+    .isISO8601()
+    .withMessage("Start time is required"),
+  check("end_time")
+    .isISO8601()
+    .withMessage("End time is required"),
+    check("attendances.*.student")
+      .isMongoId()
+      .withMessage("Subject should be a subject ID"),
+  check("attendances.*.present")
     .isBoolean()
     .withMessage("present should be a boolean"),
-  check("attendance.*.date")
-    .isISO8601()
-    .withMessage("date should be in proper date ISO String format"),
   validateAllErrors,
-  createAttendance
+  createAttendanceSession
 );
 
 /// GET ATTENDANCE ROUTES FOR ALL USERS EXCEPT ADMIN
 router.get(
-  "/attendance/teacher/:teacherId",
+  "/attendance_sessions/teacher/:teacherId",
   isSignedIn,
   isAuthenticated,
   isTeacher,
@@ -64,47 +70,41 @@ router.get(
     .isISO8601()
     .withMessage("end_date should be in proper date ISO String format"),
   validateAllErrors,
-  attendanceQueryHandler,
-  getAttendance
+  attendanceSessionQueryHandler,
+  getAttendanceSession
 );
 router.get(
-  "/attendance/student/:studentId",
+  "/attendance_sessions/student/:studentId",
   isSignedIn,
   isAuthenticated,
-  isStudent,
-  getAttendance
+  isStudent,  
+  getAttendanceSession
 );
 router.get(
-  "/attendance/parent/:parentId",
+  "/attendance_sessions/parent/:parentId",
   isSignedIn,
   isAuthenticated,
   isParent,
-  getAttendance
+  getAttendanceSession
 );
 
 /// UPDATE ROUTE FOR ATTENDANCE
 router.put(
-  "/attendance/:attendanceId/teacher/:teacherId",
+  "/attendance_session/:attendanceSessionId/teacher/:teacherId",
   isSignedIn,
   isAuthenticated,
   isTeacher,
-  updateAttendance
+  updateAttendanceSession
 );
 
 /// DELETE ROUTE FOR ATTENDANCE FOR A PARTICULAR DATE AND SUBJECT MAYBE
 router.delete(
-  "/attendance/teacher/:teacherId",
+  "/attendance_session/:attendanceSessionId/teacher/:teacherId",
   isSignedIn,
   isAuthenticated,
   isTeacher,
-  query("start_date")
-    .isISO8601()
-    .withMessage("start_date should be in proper date ISO String format"),
-  query("end_date")
-    .isISO8601()
-    .withMessage("end_date should be in proper date ISO String format"),
   validateAllErrors,
-  deleteAttendance
+  deleteAttendanceSession
 );
 
 module.exports = router;

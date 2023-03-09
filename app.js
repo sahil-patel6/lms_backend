@@ -19,7 +19,7 @@ const resourceRoutes = require("./routes/resource");
 const assignmentRoutes = require("./routes/assignment");
 const assignmentSubmissionRoutes = require("./routes/assignment_submission");
 const noticeRoutes = require("./routes/notice");
-const attendanceRoutes = require("./routes/attendance");
+const attendanceSessionRoutes = require("./routes/attendance_session");
 const testRoutes = require("./routes/test");
 
 //MiddleWares
@@ -41,7 +41,7 @@ app.use("/api/v1/", resourceRoutes);
 app.use("/api/v1/", assignmentRoutes);
 app.use("/api/v1/", assignmentSubmissionRoutes);
 app.use("/api/v1/", noticeRoutes);
-app.use("/api/v1/", attendanceRoutes);
+app.use("/api/v1/", attendanceSessionRoutes);
 app.use("/api/v1/", testRoutes);
 
 const port = process.env.PORT || 8000;

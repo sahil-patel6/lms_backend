@@ -2,8 +2,10 @@ const { sendEmail } = require("../utilities/email");
 const {
   createEmailBodyForUserCredentialsMail,
   createEmailBodyForAssignmentCreatedMail,
+  createEmailBodyForAbsentAttendanceMail
 } = require("../utilities/mail_generator");
 const Student = require("../models/student");
+const AttendanceSession = require("../models/attendance_session");
 const Assignment = require("../models/assignment");
 
 module.exports = function (agenda) {
@@ -26,7 +28,7 @@ module.exports = function (agenda) {
   agenda.define("send assignment created mail", async (job) => {
     try {
       let assignment = job.attrs.data;
-      assignment = await Assignment.findById(assignment._id).populate({
+      assignment = await AttendanceSession.findById(assignment._id).populate({
         path: "subject",
         select: "-__v -createdAt -updatedAt",
         populate: { path: "semester", select: "-__v -createdAt -updatedAt" },
@@ -46,6 +48,33 @@ module.exports = function (agenda) {
       console.log(error);
     }
   });
-
+  agenda.define("send attendance absent mail", async (job) => {
+    try {
+      let attendance_session = job.attrs.data;
+      attendance_session = await AttendanceSession.findById(attendance_session._id).populate("subject","_id name")
+      .populate(
+        "attendances.student",
+        "_id name email"
+      );
+      const emailBody = createEmailBodyForAbsentAttendanceMail(attendance_session);
+      var emails = [];
+      attendance_session.attendances.map((attendance)=>{
+        if (!attendance.present){
+          emails.push(attendance.student.email);
+        }
+      })
+      console.log(emails);
+      if (emails.length != 0){
+        await sendEmail({
+          from: process.env.EMAIL,
+          to: emails,
+          subject: `You have been marked absent in ${attendance_session.subject.name}`,
+          html: emailBody,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
   // More email related jobs
 };

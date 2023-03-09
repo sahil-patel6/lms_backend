@@ -68,8 +68,16 @@ exports.getAllStudentsByParent = (req, res) => {
 
 exports.getAllStudentsBySemester = (req, res) => {
   Student.find({ semester: req.params.semesterId })
-    .populate("semester", "_id name")
-    .select("-createdAt -updatedAt -salt -password -__v")
+    .populate({
+      path: "semester",
+      select: "-__v -createdAt -updatedAt",
+      populate: {
+        path: "department",
+        select: "-__v -createdAt -updatedAt",
+      },
+    })
+    .select("-createdAt -updatedAt -fcm_token -salt -password -__v")
+    .sort("roll_number")
     .exec((err, students) => {
       if (err || !students) {
         console.log(err);
@@ -79,7 +87,7 @@ exports.getAllStudentsBySemester = (req, res) => {
             err,
         });
       } else {
-        return res.json({ students });
+        return res.json(students);
       }
     });
 };

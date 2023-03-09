@@ -53,7 +53,7 @@ const preDeleteSubject = async (subject, next) => {
   const Resource = require("./resource");
   const Assignment = require("./assignment");
   const Teacher = require("./teacher");
-  const Attendace = require("./attendance");
+  const AttendanceSession = require("./attendance_session");
   try {
     /// REMOVING ALL RESOURCES FROM THIS SUBJECT
     await Resource.deleteMany({ subject: subject._id });
@@ -64,8 +64,8 @@ const preDeleteSubject = async (subject, next) => {
       { subjects: { $in: [ObjectIdForQuery(subject._id)] } },
       { $pull: { subjects: subject._id } }
     );
-    /// REMOVING ALL ATTENDANCE RELATED TO SUBJECT
-    await Attendace.deleteMany({ subject: subject._id });
+    /// REMOVING ALL ATTENDANCE SESSIONRELATED TO SUBJECT
+    await AttendanceSession.deleteMany({ subject: subject._id });
   } catch (e) {
     return next(e);
   }
