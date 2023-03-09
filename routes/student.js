@@ -7,11 +7,11 @@ const { getAdminById } = require("../controllers/admin");
 const {
   getStudentById,
   getStudent,
+  getAllStudentsByParent,
   getAllStudentsBySemester,
   createStudent,
   updateStudent,
   deleteStudent,
-  setStudentUploadDir,
 } = require("../controllers/student");
 
 const { checkIfSemesterExists } = require("../utilities/middlewares");
@@ -116,6 +116,15 @@ router.get(
   isAuthenticated,
   isParent,
   getAllStudentsBySemester
+);
+
+/// GET STUDENTS BY PARENT
+router.get(
+  "/students/parent/:parentId",
+  isSignedIn,
+  isAuthenticated,
+  isParent,
+  getAllStudentsByParent
 );
 
 /// UPDATE STUDENT ROUTE CAN EITHER BE USED BY ADMIN OR STUDENT HIMSELF

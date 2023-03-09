@@ -16,7 +16,7 @@ exports.getAssignmentSubmissionById = (req, res, next, id) => {
   AssignmentSubmission.findById(id)
     .populate({
       path: "student",
-      select: "-fcmToken -createdAt -updatedAt -__v -semester -password -salt",
+      select: "-fcm_token -createdAt -updatedAt -__v -semester -password -salt",
     })
     .exec((err, assignment_submission) => {
       if (err || !assignment_submission) {
@@ -45,7 +45,7 @@ exports.getAllAssignmentSubmissionsByAssignment = (req, res) => {
   AssignmentSubmission.find(params)
     .populate({
       path: "student",
-      select: "-fcmToken -createdAt -updatedAt -__v -semester -password -salt",
+      select: "-fcm_token -createdAt -updatedAt -__v -semester -password -salt",
     })
     .select("-createdAt -updatedAt -__v")
     .exec((err, assignment_submissions) => {
@@ -109,7 +109,7 @@ exports.createAssignmentSubmission = (req, res) => {
           } else {
             assignment_submission.populate({
                 path: "student",
-                select: "-fcmToken -createdAt -updatedAt -__v -semester -password -salt",
+                select: "-fcm_token -createdAt -updatedAt -__v -semester -password -salt",
               }).then((assignment_submission_populated)=>res.json(assignment_submission_populated));
             // assignment_submission.__v = undefined;
             // assignment_submission.createdAt = undefined;

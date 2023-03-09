@@ -1,4 +1,5 @@
 const Student = require("../models/student");
+const Parent = require("../models/parent");
 const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
@@ -36,6 +37,33 @@ exports.getStudent = (req, res) => {
   req.student.updatedAt = undefined;
   req.student.__v = undefined;
   return res.json(req.student);
+};
+
+exports.getAllStudentsByParent = (req, res) => {
+  Parent.findOne({ _id: req.parent._id })
+    .populate({
+      path: "students",
+      select: "-fcm_token -createdAt -updatedAt -__v -password -salt",
+      populate: {
+        path: "semester",
+        select: "-__v -createdAt -updatedAt",
+        populate: {
+          path: "department",
+          select: "-__v -createdAt -updatedAt",
+        },
+      },
+    })
+    .select("-createdAt -updatedAt -__v")
+    .exec((err, parent) => {
+      if (err || !parent) {
+        console.log(err);
+        res.status(400).json({
+          error: "Something went wrong while getting students from parents",
+        });
+      } else {
+        res.json(parent.students);
+      }
+    });
 };
 
 exports.getAllStudentsBySemester = (req, res) => {
