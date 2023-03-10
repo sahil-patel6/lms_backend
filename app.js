@@ -21,10 +21,15 @@ const assignmentSubmissionRoutes = require("./routes/assignment_submission");
 const noticeRoutes = require("./routes/notice");
 const attendanceSessionRoutes = require("./routes/attendance_session");
 const testRoutes = require("./routes/test");
+const bodyParser = require("body-parser");
 
 //MiddleWares
 app.use(express.static("public"));
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 app.use(cookieParser());
 app.use(cors());
 

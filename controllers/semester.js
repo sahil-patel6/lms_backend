@@ -37,7 +37,7 @@ exports.getAllSemestersByDepartment = (req, res) => {
       },
     },
     ...semesterAggregationHelper,
-  ]).exec((err, semesters) => {
+  ]).sort("name").exec((err, semesters) => {
     if (err || !semesters) {
       console.log(err);
       return res.status(400).json({
