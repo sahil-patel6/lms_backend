@@ -32,11 +32,12 @@ exports.attendanceSessionQueryHandler = async (req, res, next) => {
           error: "Please send a existing student id",
         });
       }
-      req.attendance_session_query.attendances.student = ObjectId(
+      req.attendance_session_query["attendances.student"] = ObjectId(
         req.query.student
       );
     }
   } catch (err) {
+    console.log(err)
     return res.status(400).json({
       error: "An error occured. Please try again later",
     });

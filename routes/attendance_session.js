@@ -78,6 +78,7 @@ router.get(
   isSignedIn,
   isAuthenticated,
   isStudent,  
+  attendanceSessionQueryHandler,
   getAttendanceSession
 );
 router.get(
@@ -85,6 +86,7 @@ router.get(
   isSignedIn,
   isAuthenticated,
   isParent,
+  attendanceSessionQueryHandler,
   getAttendanceSession
 );
 
