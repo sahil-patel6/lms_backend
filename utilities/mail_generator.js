@@ -59,7 +59,7 @@ exports.createEmailBodyForAssignmentCreatedMail = (assignment) => {
   return emailBody;
 };
 
-exports.createEmailBodyForAbsentAttendanceMail = (attendance_session) => {
+exports.createEmailBodyForAbsentAttendanceMail = (attendance_session,parent=false) => {
   let istStartTime = moment(attendance_session.start_time).tz("Asia/Kolkata");
   let istEndTime = moment(attendance_session.end_time).tz("Asia/Kolkata");
 
@@ -73,7 +73,7 @@ exports.createEmailBodyForAbsentAttendanceMail = (attendance_session) => {
       signature: "Sincerely",
       name: "There",
       intro: [
-        `This is to inform you that you have been marked absent in ${
+        `This is to inform you that ${parent ? "your child " : "you"} have been marked absent in ${
           attendance_session.subject.name
         } for session ${istStartTime.format("llll")} to ${istEndTime.format(
           "llll"

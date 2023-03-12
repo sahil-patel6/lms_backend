@@ -2,11 +2,12 @@ const { sendEmail } = require("../utilities/email");
 const {
   createEmailBodyForUserCredentialsMail,
   createEmailBodyForAssignmentCreatedMail,
-  createEmailBodyForAbsentAttendanceMail
+  createEmailBodyForAbsentAttendanceMail,
 } = require("../utilities/mail_generator");
 const Student = require("../models/student");
 const AttendanceSession = require("../models/attendance_session");
 const Assignment = require("../models/assignment");
+const Parent = require("../models/parent");
 
 module.exports = function (agenda) {
   agenda.define("send user credentials email", async (job) => {
@@ -28,7 +29,7 @@ module.exports = function (agenda) {
   agenda.define("send assignment created mail", async (job) => {
     try {
       let assignment = job.attrs.data;
-      assignment = await AttendanceSession.findById(assignment._id).populate({
+      assignment = await Assignment.findById(assignment._id).populate({
         path: "subject",
         select: "-__v -createdAt -updatedAt",
         populate: { path: "semester", select: "-__v -createdAt -updatedAt" },
@@ -36,14 +37,40 @@ module.exports = function (agenda) {
       const students = await Student.find({
         semester: assignment.subject.semester._id,
       });
+      const parents = [];
+      for await (const student of students) {
+        const parent = await Parent.findOne({ students: [student._id] });
+        if (parent) {
+          parents.push(parent);
+        }
+      }
       const emailBody = createEmailBodyForAssignmentCreatedMail(assignment);
-      console.log([students.map((student) => student.email)]);
-      await sendEmail({
-        from: process.env.EMAIL,
-        to: [students.map((student) => student.email)],
-        subject: `New Assignment has been uploaded in ${assignment.subject.name}`,
-        html: emailBody,
-      });
+      console.log(
+        "students mail for assignment created mail",
+        students.map((student) => student.email)
+      );
+      console.log(
+        "parents mail for assignment created mail",
+        parents.map((parent) => parent.email)
+      );
+      if (students.length != 0) {
+        /// SENDING MAILS TO STUDENTS
+        await sendEmail({
+          from: process.env.EMAIL,
+          to: students.map((student) => student.email),
+          subject: `New Assignment has been uploaded in ${assignment.subject.name}`,
+          html: emailBody,
+        });
+      }
+      if (parents.length != 0) {
+        /// SENDING MAILS TO PARENTS
+        await sendEmail({
+          from: process.env.EMAIL,
+          to: parents.map((parent) => parent.email),
+          subject: `Your child has got a new assignment in ${assignment.subject.name}`,
+          html: emailBody,
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -51,25 +78,57 @@ module.exports = function (agenda) {
   agenda.define("send attendance absent mail", async (job) => {
     try {
       let attendance_session = job.attrs.data;
-      attendance_session = await AttendanceSession.findById(attendance_session._id).populate("subject","_id name")
-      .populate(
-        "attendances.student",
-        "_id name email"
+      attendance_session = await AttendanceSession.findById(
+        attendance_session._id
+      )
+        .populate("subject", "_id name")
+        .populate("attendances.student", "_id name email");
+      const emailBodyForStudent =
+        createEmailBodyForAbsentAttendanceMail(attendance_session);
+      const emailBodyForParent = createEmailBodyForAbsentAttendanceMail(
+        attendance_session,
+        true
       );
-      const emailBody = createEmailBodyForAbsentAttendanceMail(attendance_session);
       var emails = [];
-      attendance_session.attendances.map((attendance)=>{
-        if (!attendance.present){
+      var students = [];
+      attendance_session.attendances.map((attendance) => {
+        if (!attendance.present) {
           emails.push(attendance.student.email);
+          students.push({
+            _id: attendance.student._id,
+            name: attendance.student.name,
+          });
         }
-      })
-      console.log(emails);
-      if (emails.length != 0){
+      });
+      
+      const parents = [];
+      for await (const student of students) {
+        const parent = await Parent.findOne({ students: [student._id] });
+        if (parent) {
+          parents.push(parent);
+        }
+      }
+      console.log(
+        "Attendance Emails",
+        emails,
+        parents.map((parent) => parent.email)
+      );
+      /// SENDING MAILS TO STUDENTS
+      if (emails.length != 0) {
         await sendEmail({
           from: process.env.EMAIL,
           to: emails,
           subject: `You have been marked absent in ${attendance_session.subject.name}`,
-          html: emailBody,
+          html: emailBodyForStudent,
+        });
+      }
+      /// SENDING MAILS TO PARENTS
+      if (parents.length != 0) {
+        await sendEmail({
+          from: process.env.EMAIL,
+          to: parents.map((parent) => parent.email),
+          subject: `Your child has been marked absent in ${attendance_session.subject.name}`,
+          html: emailBodyForParent,
         });
       }
     } catch (error) {

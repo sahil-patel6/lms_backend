@@ -1,14 +1,14 @@
 const sendNotification = require("../notifications");
 const Student = require("../models/student");
+const Parent = require("../models/parent")
 const Assignment = require("../models/assignment");
-const AttendanceSession = require("../models/attendance_session")
+const AttendanceSession = require("../models/attendance_session");
 const moment = require("moment");
 
 module.exports = function (agenda) {
   agenda.define("send assignment created notification", async (job) => {
     try {
       let assignment = job.attrs.data;
-      console.log(assignment);
       assignment = await Assignment.findById(assignment._id).populate({
         path: "subject",
         select: "-__v -createdAt -updatedAt",
@@ -17,13 +17,34 @@ module.exports = function (agenda) {
       const students = await Student.find({
         semester: assignment.subject.semester._id,
       });
-      registration_tokens = [];
+      registration_tokens_for_students = [];
+      registration_tokens_for_parents = [];
       students.map((student) => {
         if (student.fcm_token) {
-          registration_tokens.push(student.fcm_token);
+          registration_tokens_for_students.push(student.fcm_token);
         }
       });
-      console.log(registration_tokens);
+
+      const parents = [];
+      for await (const student of students) {
+        const parent = await Parent.findOne({ students: [student._id] });
+        if (parent) {
+          parents.push(parent);
+        }
+      }
+      // const parents = await Parent.find({
+      //   "students": students.map((student) => student._id),
+      // });
+      parents.map((parent) => {
+        if (parent.fcm_token) {
+          registration_tokens_for_parents.push(parent.fcm_token);
+        }
+      });
+      console.log(
+        "Registration tokens for assignment notifications",
+        registration_tokens_for_students,
+        registration_tokens_for_parents
+      );
 
       let utcDate = moment(assignment.dueDate);
       // Convert the UTC date into IST
@@ -32,7 +53,7 @@ module.exports = function (agenda) {
       console.log("Using Moment.js:");
       console.log(`UTC date (iso): ${utcDate.format("llll")}`);
       console.log(`IST date (iso): ${istDate.format("llll")}`);
-      if (registration_tokens.length != 0) {
+      if (registration_tokens_for_students.length != 0) {
         sendNotification({
           notification: {
             title: `New Assigment Uploaded in ${assignment.subject.name}`,
@@ -45,10 +66,29 @@ module.exports = function (agenda) {
           data: {
             assignment_id: assignment._id.toString(),
           },
-          tokens: registration_tokens,
+          tokens: registration_tokens_for_students,
         });
       } else {
-        console.log("NO FCM TOKENS TO SEND NOTIFICATIONS TO.....");
+        console.log("NO STUDENTS FCM TOKENS TO SEND NOTIFICATIONS TO.....");
+      }
+
+      if (registration_tokens_for_parents.length != 0) {
+        sendNotification({
+          notification: {
+            title: `Your child has got a new assignment in ${assignment.subject.name}`,
+            body: `Assignment Title: ${
+              assignment.title
+            }\nAssignment Description: ${
+              assignment.description
+            }\nAssignment Due Date: ${istDate.format("llll")}`,
+          },
+          data: {
+            assignment_id: assignment._id.toString(),
+          },
+          tokens: registration_tokens_for_parents,
+        });
+      } else {
+        console.log("NO PARENTS FCM TOKENS TO SEND NOTIFICATIONS TO.....");
       }
     } catch (error) {
       console.log(error);
@@ -63,13 +103,39 @@ module.exports = function (agenda) {
       )
         .populate("subject", "_id name")
         .populate("attendances.student", "_id name fcm_token");
-      registration_tokens = [];
+      registration_tokens_for_students = [];
+      registration_tokens_for_parents = [];
+      var students = [];
       attendance_session.attendances.map((attendance) => {
         if (!attendance.present && attendance.student.fcm_token) {
-          registration_tokens.push(attendance.student.fcm_token);
+          registration_tokens_for_students.push(attendance.student.fcm_token);
+          students.push({
+            _id: attendance.student._id,
+            name: attendance.student.name,
+          });
         }
       });
-      console.log(registration_tokens);
+      
+      const parents = [];
+      for await (const student of students) {
+        const parent = await Parent.findOne({ students: [student._id] });
+        if (parent) {
+          parents.push(parent);
+        }
+      }
+      // const parents = await Parent.find({
+      //   "students": students.map((student) => student._id),
+      // });
+      parents.map((parent) => {
+        if (parent.fcm_token) {
+          registration_tokens_for_parents.push(parent.fcm_token);
+        }
+      });
+      console.log(
+        "attendance absent notification registration tokens",
+        registration_tokens_for_students,
+        registration_tokens_for_parents
+      );
       let istStartTime = moment(attendance_session.start_time).tz(
         "Asia/Kolkata"
       );
@@ -78,7 +144,7 @@ module.exports = function (agenda) {
       console.log("Using Moment.js:");
       console.log(`istStartTime: ${istStartTime.format("llll")}`);
       console.log(`istEndTime: ${istEndTime.format("llll")}`);
-      if (registration_tokens.length != 0) {
+      if (registration_tokens_for_students.length != 0) {
         sendNotification({
           notification: {
             title: `You have been marked absent`,
@@ -91,10 +157,28 @@ module.exports = function (agenda) {
           data: {
             attendance_session: attendance_session._id.toString(),
           },
-          tokens: registration_tokens,
+          tokens: registration_tokens_for_students,
         });
       } else {
-        console.log("NO FCM TOKENS TO SEND NOTIFICATIONS TO.....");
+        console.log("NO STUDENTS FCM TOKENS TO SEND NOTIFICATIONS TO.....");
+      }
+      if (registration_tokens_for_parents.length != 0) {
+        sendNotification({
+          notification: {
+            title: `Your child has been marked absent`,
+            body: `This is to inform you that your child has been marked absent in ${
+              attendance_session.subject.name
+            } for session ${istStartTime.format("llll")} to ${istEndTime.format(
+              "llll"
+            )}`,
+          },
+          data: {
+            attendance_session: attendance_session._id.toString(),
+          },
+          tokens: registration_tokens_for_parents,
+        });
+      } else {
+        console.log("NO PARENTS FCM TOKENS TO SEND NOTIFICATIONS TO.....");
       }
     } catch (error) {
       console.log(error);
