@@ -35,6 +35,21 @@ exports.getParent = (req, res) => {
   return res.json(req.parent);
 };
 
+exports.getAllParents = (req, res) => {
+  Parent.find()
+    .select(
+      "-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt"
+    )
+    .exec((err, parents) => {
+      if (err || !parents) {
+        return res.status(400).json({
+          error: "No parent Found",
+        });
+      }
+      res.json(parents);
+    });
+};
+
 exports.createParent = (req, res) => {
   // if (req?.file?.profile_pic) {
   //   console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);

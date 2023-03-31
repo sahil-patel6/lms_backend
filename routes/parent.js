@@ -11,6 +11,7 @@ const {
   updateParent,
   deleteParent,
   setParentUploadDir,
+  getAllParents,
 } = require("../controllers/parent");
 
 const { checkIfStudentsExists } = require("../utilities/middlewares");
@@ -55,6 +56,13 @@ router.post(
 );
 
 /// GET PARENT ROUTES
+router.get(
+  "/parents/admin/:adminId",
+  isSignedIn,
+  isAuthenticated,
+  isAdmin,
+  getAllParents
+);
 router.get(
   "/parent/:parentId/",
   isSignedIn,

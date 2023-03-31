@@ -9,6 +9,7 @@ const {
   createTeacher,
   deleteTeacher,
   setTeacherUploadDir,
+  getAllTeachers,
 } = require("../controllers/teacher");
 
 const { checkIfSubjectsExists } = require("../utilities/middlewares");
@@ -45,9 +46,6 @@ router.post(
     .isLength({ min: 3 })
     .withMessage("name should be atleast 3 char long"),
   check("email").isEmail().withMessage("Please enter a valid email"),
-  check("phone")
-    .isMobilePhone("en-IN")
-    .withMessage("Please Enter a valid phone number"),
   check("subjects.*")
     .isMongoId()
     .withMessage("Subjects should contain subject id's array"),
@@ -60,6 +58,7 @@ router.post(
 );
 
 /// GET ROUTES FOR ALL USERS
+router.get("/teachers/admin/:adminId", isSignedIn, isAuthenticated, isAdmin, getAllTeachers);
 router.get(
   "/teacher/:teacherId",
   isSignedIn,

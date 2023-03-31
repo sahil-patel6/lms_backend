@@ -39,6 +39,28 @@ exports.getStudent = (req, res) => {
   return res.json(req.student);
 };
 
+exports.getAllStudents = (req, res) => {
+  Student.find()
+    .populate("semester", "_id name department")
+    .populate({
+      path: "semester",
+      select: "_id name department",
+      populate: {
+        path: "department",
+        select: "_id name",
+      },
+    })
+    .select("-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt")
+    .exec((err, students) => {
+      if (err || !students) {
+        return res.status(400).json({
+          error: "No students Found",
+        });
+      }
+      res.json(students);
+    });
+};
+
 exports.getAllStudentsByParent = (req, res) => {
   Parent.findOne({ _id: req.parent._id })
     .populate({

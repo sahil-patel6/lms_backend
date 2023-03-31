@@ -29,6 +29,21 @@ exports.getTeacherById = (req, res, next, id) => {
     });
 };
 
+
+exports.getAllTeachers = (req, res) => {
+  Teacher.find()
+    .populate("subjects", "_id name")
+    .select("-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt")
+    .exec((err, teachers) => {
+      if (err || !teachers) {
+        return res.status(400).json({
+          error: "No teachers Found",
+        });
+      }
+      return res.json(teachers);
+    });
+};
+
 exports.getTeacher = (req, res) => {
   req.teacher.salt = undefined;
   req.teacher.password = undefined;

@@ -12,6 +12,7 @@ const {
   createStudent,
   updateStudent,
   deleteStudent,
+  getAllStudents,
 } = require("../controllers/student");
 
 const { checkIfSemesterExists } = require("../utilities/middlewares");
@@ -45,9 +46,6 @@ router.post(
     .isLength({ min: 3 })
     .withMessage("name should be atleast 3 char long"),
   check("email").isEmail().withMessage("Please enter a valid email"),
-  check("phone")
-    .isMobilePhone("en-IN")
-    .withMessage("Please Enter a valid phone number"),
   check("semester").isMongoId().withMessage("Semester should be semester Id"),
   check("roll_number").isString().withMessage("roll_number cannot be empty"),
   check("plainPassword")
@@ -56,6 +54,14 @@ router.post(
   validateAllErrors,
   checkIfSemesterExists,
   createStudent
+);
+
+router.get(
+  "/students/admin/:adminId",
+  isSignedIn,
+  isAuthenticated,
+  isAdmin,
+  getAllStudents
 );
 
 /// GET STUDENT ROUTE FOR ALL USERS
