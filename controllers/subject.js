@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const {
   subjectAggregationHelper,
 } = require("../utilities/aggregation_helpers");
+const Semester = require("../models/semester");
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.setSubjectUploadDir = (req, res, next) => {
@@ -108,7 +109,7 @@ exports.getAllSubjectsBySemester = (req, res) => {
       },
     },
     ...subjectAggregationHelper,
-  ]).exec((err, subjects) => {
+  ]).exec(async (err, subjects) => {
     if (err || !subjects) {
       console.log(err);
       return res.status(400).json({
@@ -116,7 +117,8 @@ exports.getAllSubjectsBySemester = (req, res) => {
           "An error occurred while trying to find all subjects from db " + err,
       });
     } else {
-      return res.json(subjects);
+      const semester = await Semester.findById(req.params.semesterId).populate("department","_id name").select("_id name");
+      return res.json({semester,subjects});
     }
   });
 };
@@ -138,6 +140,16 @@ exports.createSubject = (req, res, next) => {
       // }
       if (req.body.fcs_pic_path) {
         removeFile(req.body.fcs_pic_path);
+      }
+      /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+      if (err.code === 11000){
+        const key = Object.keys(err.keyValue);
+        const value = Object.values(err.keyValue);
+        console.log(Object.keys(err.keyValue))
+        console.log(Object.values(err.keyValue))
+        return res.status(400).json({
+          error: `${key[0]} already exists`
+        })
       }
       return res.status(400).json({
         error: "Not able to save subject in DB",
@@ -168,6 +180,16 @@ exports.updateSubject = (req, res) => {
     .select("-createdAt -updatedAt -__v")
     .exec((err, subject) => {
       if (err || !subject) {
+        /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+        if (err.code === 11000){
+          const key = Object.keys(err.keyValue);
+          const value = Object.values(err.keyValue);
+          console.log(Object.keys(err.keyValue))
+          console.log(Object.values(err.keyValue))
+          return res.status(400).json({
+            error: `${key[0]} already exists`
+          })
+        }
         return res.status(400).json({
           error: "Update failed",
         });

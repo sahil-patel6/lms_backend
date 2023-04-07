@@ -78,6 +78,16 @@ exports.createAssignment = (req, res, next) => {
       req.body.assignment_question_files.forEach((question) => {
         removeFile(question.fcs_path);
       });
+      /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+      if (err.code === 11000){
+        const key = Object.keys(err.keyValue);
+        const value = Object.values(err.keyValue);
+        console.log(Object.keys(err.keyValue))
+        console.log(Object.values(err.keyValue))
+        return res.status(400).json({
+          error: `${key[0]} already exists`
+        })
+      }
       return res.status(400).json({
         error: "Not able to save assignment in DB",
       });
@@ -129,6 +139,16 @@ exports.updateAssignment = (req, res) => {
     .exec(async (err, assignment) => {
       if (err || !assignment) {
         console.log(err);
+        /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+        if (err.code === 11000){
+          const key = Object.keys(err.keyValue);
+          const value = Object.values(err.keyValue);
+          console.log(Object.keys(err.keyValue))
+          console.log(Object.values(err.keyValue))
+          return res.status(400).json({
+            error: `${key[0]} already exists`
+          })
+        }
         return res.status(400).json({
           error: "Update failed",
         });

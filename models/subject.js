@@ -35,6 +35,8 @@ const subjectSchema = new Schema(
   { timestamps: true }
 );
 
+subjectSchema.index({name:1,semester:1},{unique:true})
+
 subjectSchema.pre("deleteOne", async function (next) {
   const subject = await this.model.findOne(this.getQuery());
   await preDeleteSubject(subject, next);

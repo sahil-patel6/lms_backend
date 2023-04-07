@@ -139,6 +139,7 @@ router.put(
   isSignedIn,
   isAuthenticated,
   isAdmin,
+  checkIfSemesterExists,
   updateStudent
 );
 router.put(

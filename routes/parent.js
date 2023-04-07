@@ -88,6 +88,7 @@ router.put(
   isSignedIn,
   isAuthenticated,
   isAdmin,
+  checkIfStudentsExists,
   updateParent
 );
 router.put(

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const {
   semesterAggregationHelper,
 } = require("../utilities/aggregation_helpers");
+const Department = require("../models/department");
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.getSemesterById = (req, res, next, id) => {
@@ -37,17 +38,21 @@ exports.getAllSemestersByDepartment = (req, res) => {
       },
     },
     ...semesterAggregationHelper,
-  ]).sort("name").exec((err, semesters) => {
-    if (err || !semesters) {
-      console.log(err);
-      return res.status(400).json({
-        error:
-          "An error occurred while trying to find all semesters from db " + err,
-      });
-    } else {
-      return res.json(semesters);
-    }
-  });
+  ])
+    .sort("name")
+    .exec(async (err, semesters) => {
+      if (err || !semesters) {
+        console.log(err);
+        return res.status(400).json({
+          error:
+            "An error occurred while trying to find all semesters from db " +
+            err,
+        });
+      } else {
+        const department = await Department.findById(req.params.departmentId).select("_id name"); 
+        return res.json({department,semesters});
+      }
+    });
 };
 
 exports.createSemester = (req, res) => {
@@ -55,6 +60,16 @@ exports.createSemester = (req, res) => {
   semester.save((err, semester) => {
     if (err || !semester) {
       console.log(err);
+      /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+      if (err.code === 11000) {
+        const key = Object.keys(err.keyValue);
+        const value = Object.values(err.keyValue);
+        console.log(Object.keys(err.keyValue));
+        console.log(Object.values(err.keyValue));
+        return res.status(400).json({
+          error: `${key[0]} already exists`,
+        });
+      }
       return res.status(400).json({
         error: "Not able to save semester in DB",
       });
@@ -76,6 +91,17 @@ exports.updateSemester = (req, res) => {
     .select("-createdAt -updatedAt -__v")
     .exec((err, semester) => {
       if (err || !semester) {
+        console.log(err);
+        /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+        if (err.code === 11000) {
+          const key = Object.keys(err.keyValue);
+          const value = Object.values(err.keyValue);
+          console.log(Object.keys(err.keyValue));
+          console.log(Object.values(err.keyValue));
+          return res.status(400).json({
+            error: `${key[0]} already exists`,
+          });
+        }
         return res.status(400).json({
           error: "Update failed",
         });

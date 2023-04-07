@@ -132,6 +132,16 @@ exports.createStudent = (req, res) => {
       if (req.body.fcs_profile_pic_path) {
         removeFile(req.body.fcs_profile_pic_path);
       }
+      /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+      if (err.code === 11000){
+        const key = Object.keys(err.keyValue);
+        const value = Object.values(err.keyValue);
+        console.log(Object.keys(err.keyValue))
+        console.log(Object.values(err.keyValue))
+        return res.status(400).json({
+          error: `${key[0]} already exists`
+        })
+      }
       return res.status(400).json({
         error: "Not able to save student in DB",
       });
@@ -172,6 +182,16 @@ exports.updateStudent = (req, res) => {
     .exec((err, student) => {
       if (err || !student) {
         console.log(err);
+        /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+        if (err.code === 11000){
+          const key = Object.keys(err.keyValue);
+          const value = Object.values(err.keyValue);
+          console.log(Object.keys(err.keyValue))
+          console.log(Object.values(err.keyValue))
+          return res.status(400).json({
+            error: `${key[0]} already exists`
+          })
+        }
         return res.status(400).json({
           error: "Update failed",
         });

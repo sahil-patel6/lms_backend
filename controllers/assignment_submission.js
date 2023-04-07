@@ -102,15 +102,30 @@ exports.createAssignmentSubmission = (req, res) => {
             req.body.submission.forEach((submission) => {
               removeFile(submission.fcs_path);
             });
+            /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+            if (err.code === 11000) {
+              const key = Object.keys(err.keyValue);
+              const value = Object.values(err.keyValue);
+              console.log(Object.keys(err.keyValue));
+              console.log(Object.values(err.keyValue));
+              return res.status(400).json({
+                error: `${key[0]} already exists`,
+              });
+            }
             return res.status(400).json({
               error:
                 err.message ?? "Not able to save assignment_submission in DB",
             });
           } else {
-            assignment_submission.populate({
+            assignment_submission
+              .populate({
                 path: "student",
-                select: "-fcm_token -createdAt -updatedAt -__v -semester -password -salt",
-              }).then((assignment_submission_populated)=>res.json(assignment_submission_populated));
+                select:
+                  "-fcm_token -createdAt -updatedAt -__v -semester -password -salt",
+              })
+              .then((assignment_submission_populated) =>
+                res.json(assignment_submission_populated)
+              );
             // assignment_submission.__v = undefined;
             // assignment_submission.createdAt = undefined;
             // assignment_submission.updatedAt = undefined;
@@ -164,6 +179,16 @@ exports.updateAssignmentSubmission = (req, res) => {
     .exec((err, assignment_submission) => {
       if (err || !assignment_submission) {
         console.log(err);
+        /// THIS CODE MEANS THERE IS A DUPLICATE KEY
+        if (err.code === 11000){
+          const key = Object.keys(err.keyValue);
+          const value = Object.values(err.keyValue);
+          console.log(Object.keys(err.keyValue))
+          console.log(Object.values(err.keyValue))
+          return res.status(400).json({
+            error: `${key[0]} already exists`
+          })
+        }
         return res.status(400).json({
           error: "Assignment Submission Update failed",
         });

@@ -8,7 +8,6 @@ const semesterSchema = new Schema(
       type: String,
       required: true,
       maxlength: 32,
-      trim: true,
     },
     department: {
       type: ObjectId,
@@ -18,6 +17,8 @@ const semesterSchema = new Schema(
   },
   { timestamps: true }
 );
+
+semesterSchema.index({name:1,department:1},{unique:true})
 
 semesterSchema.pre("deleteOne",async function(next){
     const semester = await this.model.findOne(this.getQuery());
