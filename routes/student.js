@@ -13,6 +13,7 @@ const {
   updateStudent,
   deleteStudent,
   getAllStudents,
+  promoteStudents,
 } = require("../controllers/student");
 
 const { checkIfSemesterExists } = require("../utilities/middlewares");
@@ -54,6 +55,18 @@ router.post(
   validateAllErrors,
   checkIfSemesterExists,
   createStudent
+);
+
+router.post(
+  "/students/promote/admin/:adminId",
+  isSignedIn,
+  isAuthenticated,
+  isAdmin,
+  check("students").isArray({min:1}).withMessage("Please select atleast one student"),
+  check("semester").isMongoId().withMessage("toSemester should be semester id"),
+  validateAllErrors,
+  checkIfSemesterExists,
+  promoteStudents,
 );
 
 router.get(

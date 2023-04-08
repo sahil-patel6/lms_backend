@@ -1,5 +1,7 @@
 const Student = require("../models/student");
 const Parent = require("../models/parent");
+const AssignmentSubmission = require("../models/assignment_submission");
+const AttendanceSession = require("../models/attendance_session");
 const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
@@ -50,7 +52,9 @@ exports.getAllStudents = (req, res) => {
         select: "_id name",
       },
     })
-    .select("-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt")
+    .select(
+      "-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt"
+    )
     .exec((err, students) => {
       if (err || !students) {
         return res.status(400).json({
@@ -114,6 +118,42 @@ exports.getAllStudentsBySemester = (req, res) => {
     });
 };
 
+exports.promoteStudents = (req, res) => {
+  Student.updateMany(
+    { _id: req.body.students },
+    { semester: req.body.semester },
+    { new: true },
+    async (err, students) => {
+      if ((err, !students)) {
+        console.log(err);
+        res.status(400).json({
+          error: "Something went wrong",
+        });
+      }
+      req.body.students.map(async (s) => {
+        /// REMOVING ASSIGNMENT SUBMISSION
+        await AssignmentSubmission.deleteMany({ student: s });
+        /// REMOVING STUDENT'S ATTENDANCE
+        /// TODO: NEED TO PROPERLY REMOVE STUDENT'S ATTENDACE
+        await AttendanceSession.updateMany(
+          {
+            "attendances.student": s,
+          },
+          {
+            $pull: {
+              attendances: {
+                student: s,
+              },
+            },
+          }
+        );
+      });
+
+      res.json(students);
+    }
+  );
+};
+
 exports.createStudent = (req, res) => {
   // if (req?.file?.profile_pic) {
   //   console.log(req.file.profile_pic.filepath, req.file.profile_pic.newFilename);
@@ -133,14 +173,14 @@ exports.createStudent = (req, res) => {
         removeFile(req.body.fcs_profile_pic_path);
       }
       /// THIS CODE MEANS THERE IS A DUPLICATE KEY
-      if (err.code === 11000){
+      if (err.code === 11000) {
         const key = Object.keys(err.keyValue);
         const value = Object.values(err.keyValue);
-        console.log(Object.keys(err.keyValue))
-        console.log(Object.values(err.keyValue))
+        console.log(Object.keys(err.keyValue));
+        console.log(Object.values(err.keyValue));
         return res.status(400).json({
-          error: `${key[0]} already exists`
-        })
+          error: `${key[0]} already exists`,
+        });
       }
       return res.status(400).json({
         error: "Not able to save student in DB",
@@ -183,14 +223,14 @@ exports.updateStudent = (req, res) => {
       if (err || !student) {
         console.log(err);
         /// THIS CODE MEANS THERE IS A DUPLICATE KEY
-        if (err.code === 11000){
+        if (err.code === 11000) {
           const key = Object.keys(err.keyValue);
           const value = Object.values(err.keyValue);
-          console.log(Object.keys(err.keyValue))
-          console.log(Object.values(err.keyValue))
+          console.log(Object.keys(err.keyValue));
+          console.log(Object.values(err.keyValue));
           return res.status(400).json({
-            error: `${key[0]} already exists`
-          })
+            error: `${key[0]} already exists`,
+          });
         }
         return res.status(400).json({
           error: "Update failed",

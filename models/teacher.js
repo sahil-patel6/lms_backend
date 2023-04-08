@@ -23,6 +23,7 @@ const teacherSchema = new Schema(
     phone: {
       type: String,
       default: "",
+      unique: true,
     },
     bio: {
       type: String,
