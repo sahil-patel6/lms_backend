@@ -2,7 +2,8 @@ const Admin = require("../models/admin");
 const Parent = require("../models/parent");
 const Teacher = require("../models/teacher");
 const Student = require("../models/student");
-
+const mongoose = require("mongoose")
+const ObjectId = mongoose.Types.ObjectId;
 const jwt = require("jsonwebtoken");
 const {expressjwt} = require("express-jwt");
 
@@ -10,6 +11,28 @@ exports.signout = (req, res) => {
   res.clearCookie("token");
   res.json({
     message: "user signed out successfully",
+  });
+};
+
+exports.signoutTeacher = async (req, res) => {
+  const teacher = await Teacher.updateOne({_id:ObjectId(req.params.teacherId)},{fcm_token:""},{new:true});
+  console.log(teacher);
+  res.json({
+    message: "Teacher signed out successfully",
+  });
+};
+
+exports.signoutStudent = async (req, res) => {
+  await Student.updateOne({_id:ObjectId(req.params.studentId)},{fcm_token:""});
+  res.json({
+    message: "Student signed out successfully",
+  });
+};
+
+exports.signoutParent = async (req, res) => {
+  await Parent.updateOne({_id:ObjectId(req.params.parentId)},{fcm_token:""});
+  res.json({
+    message: "Parent signed out successfully",
   });
 };
 
