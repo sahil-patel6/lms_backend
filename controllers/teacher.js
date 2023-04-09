@@ -32,7 +32,7 @@ exports.getTeacherById = (req, res, next, id) => {
 
 exports.getAllTeachers = (req, res) => {
   Teacher.find()
-    .populate("subjects", "_id name")
+    .populate("subjects", "_id name pic_url")
     .select("-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt")
     .exec((err, teachers) => {
       if (err || !teachers) {

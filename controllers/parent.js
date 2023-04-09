@@ -37,7 +37,7 @@ exports.getParent = (req, res) => {
 
 exports.getAllParents = (req, res) => {
   Parent.find()
-    .populate("students", "_id name")
+    .populate("students", "_id name profile_pic")
     .select(
       "-salt -password -fcm_token -fcs_profile_path -__v -createdAt -updatedAt"
     )

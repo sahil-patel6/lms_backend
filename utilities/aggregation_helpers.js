@@ -16,6 +16,7 @@ exports.departmentAggregationHelper = [
                 $project: {
                   _id: 1,
                   name: 1,
+                  pic_url:1,
                 },
               },
             ],
