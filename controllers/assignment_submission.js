@@ -1,16 +1,5 @@
 const AssignmentSubmission = require("../models/assignment_submission");
-const fs = require("fs");
 const { removeFile } = require("../utilities/remove_file");
-
-exports.setAssignmentSubmissionUploadDir = (req, res, next) => {
-  const dir = `${__dirname}/../public/uploads/assignment_submissions/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
 
 exports.getAssignmentSubmissionById = (req, res, next, id) => {
   AssignmentSubmission.findById(id)

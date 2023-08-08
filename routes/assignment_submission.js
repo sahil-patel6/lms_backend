@@ -17,7 +17,6 @@ const { isSignedIn, isAuthenticated, isAdmin, isTeacher, isStudent, isParent} = 
 const {getAdminById} =  require("../controllers/admin");
 const {validateAllErrors} = require("../utilities/error")
 const { check } = require("express-validator");
-const {handleForm} = require("../utilities/form_handler");
 const {getTeacherById} = require("../controllers/teacher");
 const {getStudentById} = require("../controllers/student");
 const {getParentById} = require("../controllers/parent");

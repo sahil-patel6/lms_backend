@@ -5,17 +5,6 @@ const AttendanceSession = require("../models/attendance_session");
 const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
 
-exports.setStudentUploadDir = (req, res, next) => {
-  const fs = require("fs");
-  const dir = `${__dirname}/../public/uploads/students/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
-
 exports.getStudentById = (req, res, next, id) => {
   Student.findById(id)
     .populate("semester", "_id name")

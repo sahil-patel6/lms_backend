@@ -1,17 +1,6 @@
 const Teacher = require("../models/teacher");
-const fs = require("fs");
 const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
-
-exports.setTeacherUploadDir = (req, res, next) => {
-  const dir = `${__dirname}/../public/uploads/teachers/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
 
 exports.getTeacherById = (req, res, next, id) => {
   Teacher.findById(id)

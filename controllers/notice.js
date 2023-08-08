@@ -1,17 +1,6 @@
 const Notice = require("../models/notice");
 const { removeFile } = require("../utilities/remove_file");
 
-exports.setNoticeUploadDir = (req, res, next) => {
-  const fs = require("fs");
-  const dir = `${__dirname}/../public/uploads/notices/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
-
 exports.getNoticeById = (req, res, next, id) => {
   Notice.findById(id)
     .exec((err, notice) => {

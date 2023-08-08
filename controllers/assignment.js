@@ -1,17 +1,6 @@
 const Assignment = require("../models/assignment");
-const fs = require("fs");
 const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
-
-exports.setAssignmentUploadDir = (req, res, next) => {
-  const dir = `${__dirname}/../public/uploads/assignments/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
 
 exports.getAssignmentById = (req, res, next, id) => {
   Assignment.findById(id)

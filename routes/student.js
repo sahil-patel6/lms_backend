@@ -26,7 +26,6 @@ const {
   isTeacher,
   isParent,
 } = require("../controllers/auth");
-const { handleForm } = require("../utilities/form_handler");
 const { check } = require("express-validator");
 const { validateAllErrors } = require("../utilities/error");
 const { getParentById } = require("../controllers/parent");

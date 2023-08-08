@@ -8,7 +8,6 @@ const {
   updateTeacher,
   createTeacher,
   deleteTeacher,
-  setTeacherUploadDir,
   getAllTeachers,
 } = require("../controllers/teacher");
 
@@ -25,8 +24,6 @@ const {
 const { getAdminById } = require("../controllers/admin");
 const { getStudentById } = require("../controllers/student");
 const { getParentById } = require("../controllers/parent");
-
-const { handleForm } = require("../utilities/form_handler");
 
 const { validateAllErrors } = require("../utilities/error");
 const { check } = require("express-validator");

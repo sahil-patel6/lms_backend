@@ -9,17 +9,6 @@ const {
 const Semester = require("../models/semester");
 const ObjectId = mongoose.Types.ObjectId;
 
-exports.setSubjectUploadDir = (req, res, next) => {
-  const fs = require("fs");
-  const dir = `${__dirname}/../public/uploads/subjects/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
-
 exports.getSubjectById = (req, res, next, id) => {
   Subject.aggregate([
     {

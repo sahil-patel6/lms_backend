@@ -1,16 +1,5 @@
 const Resource = require("../models/resource");
-const fs = require("fs");
 const { removeFile } = require("../utilities/remove_file");
-
-exports.setResourceUploadDir = (req, res, next) => {
-  const dir = `${__dirname}/../public/uploads/resources/`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
 
 exports.getResourceById = (req, res, next, id) => {
   Resource.findById(id).exec((err, resource) => {

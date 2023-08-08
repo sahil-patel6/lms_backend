@@ -1,16 +1,6 @@
 const Parent = require("../models/parent");
-const fs = require("fs");
 const { removeFile } = require("../utilities/remove_file");
 const agenda = require("../agenda");
-
-exports.setParentUploadDir = (req, res, next) => {
-  const dir = `${__dirname}/../public/uploads/parents/`;
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  req.uploadDir = dir;
-  next();
-};
 
 exports.getParentById = (req, res, next, id) => {
   Parent.findById(id).exec((err, parent) => {
